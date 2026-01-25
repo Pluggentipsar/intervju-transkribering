@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir \"c:\\\\Kod\\\\intervju-transkribering\\\\backend\")",
+      "Bash(dir \"c:\\\\Kod\\\\intervju-transkribering\\\\frontend\")",
+      "Bash(python -m venv:*)",
+      "Bash(.venvScriptspip install -e \".[dev]\")",
+      "Bash(venv/Scripts/python.exe -m pip install:*)",
+      "Bash(npm install)",
+      "Bash(npm run dev:*)",
+      "Bash(venv/Scripts/python.exe -m uvicorn:*)",
+      "Bash(dir /s /b c:Kodintervju-transkriberingfrontendsrc)",
+      "Bash(curl:*)",
+      "Bash(python:*)"
+    ]
+  }
+}
