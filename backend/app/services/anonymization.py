@@ -115,7 +115,10 @@ def anonymize_segments(
         Segments with 'anonymized_text' field added
     """
     if not is_anonymization_available():
-        logger.warning("Anonymization not available - transformers not installed")
+        logger.warning("Anonymization not available - transformers not installed, skipping")
+        # Update progress to skip anonymization range (90% -> 95%)
+        if progress_callback:
+            progress_callback(95, "anonymization_skipped")
         return segments
 
     if progress_callback:

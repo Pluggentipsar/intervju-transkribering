@@ -136,6 +136,7 @@ def run_transcription_sync(
 
     try:
         # Transcribe
+        logger.info(f"Starting transcription with model: {model_id}")
         result = transcribe_audio(
             audio_path=audio_path,
             model_id=model_id,
@@ -144,21 +145,32 @@ def run_transcription_sync(
         )
 
         segments = result.segments
+        logger.info(f"Transcription completed: {len(segments)} segments")
 
         # Add speaker labels if enabled
         if enable_diarization and is_diarization_available():
+            logger.info("Starting speaker diarization...")
             segments = add_speaker_labels(
                 segments=segments,
                 audio_path=audio_path,
                 progress_callback=progress_callback,
             )
+            logger.info("Speaker diarization completed")
+        elif enable_diarization:
+            logger.warning("Diarization was enabled but is not available (missing HF token or dependencies)")
+            progress_callback(90, "diarization_unavailable")
 
         # Anonymize sensitive information if enabled
         if enable_anonymization and is_anonymization_available():
+            logger.info("Starting anonymization...")
             segments = anonymize_segments(
                 segments=segments,
                 progress_callback=progress_callback,
             )
+            logger.info("Anonymization completed")
+        elif enable_anonymization:
+            logger.warning("Anonymization was enabled but is not available (missing transformers)")
+            progress_callback(95, "anonymization_unavailable")
 
         # Calculate metadata
         speakers = set(s.get("speaker") for s in segments if s.get("speaker"))

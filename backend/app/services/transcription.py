@@ -97,12 +97,14 @@ def transcribe_audio(
     if progress_callback:
         progress_callback(5, "loading_model")
 
+    logger.info(f"Loading model: {model_id}")
     model = get_model(model_id)
 
     # Report transcription start
     if progress_callback:
         progress_callback(15, "transcribing")
 
+    logger.info(f"Starting transcription of {audio_path}")
     # Transcribe with faster-whisper
     segments_iter, info = model.transcribe(
         str(audio_path),
@@ -140,6 +142,7 @@ def transcribe_audio(
     if progress_callback:
         progress_callback(70, "transcription_complete")
 
+    logger.info(f"Transcription complete: {len(segments)} segments, {total_duration:.2f}s duration")
     return TranscriptionResult(
         segments=segments,
         language=info.language,

@@ -11,7 +11,8 @@
       "Bash(venv/Scripts/python.exe -m uvicorn:*)",
       "Bash(dir /s /b c:Kodintervju-transkriberingfrontendsrc)",
       "Bash(curl:*)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(dir:*)"
     ]
   }
 }

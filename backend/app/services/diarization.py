@@ -58,7 +58,10 @@ def add_speaker_labels(
         Updated segments with speaker labels
     """
     if not is_diarization_available():
-        logger.warning("Diarization not available, returning segments without speaker labels")
+        logger.warning("Diarization not available, skipping speaker identification")
+        # Update progress to skip diarization range (70% -> 90%)
+        if progress_callback:
+            progress_callback(90, "diarization_skipped")
         return segments
 
     try:
@@ -67,24 +70,30 @@ def add_speaker_labels(
 
         audio_path = Path(audio_path)
 
+        logger.info("Starting speaker diarization...")
         if progress_callback:
             progress_callback(72, "loading_diarization_model")
 
         device = "cuda" if torch.cuda.is_available() else "cpu"
+        logger.info(f"Using device: {device}")
 
         # Load audio
+        logger.info(f"Loading audio from {audio_path}")
         audio = whisperx.load_audio(str(audio_path))
 
         if progress_callback:
             progress_callback(75, "diarizing")
 
         # Run diarization
+        logger.info("Initializing diarization pipeline...")
         diarize_model = whisperx.DiarizationPipeline(
             use_auth_token=settings.hf_token,
             device=device,
         )
 
+        logger.info("Running diarization (this may take a while)...")
         diarize_segments = diarize_model(audio)
+        logger.info("Diarization completed")
 
         if progress_callback:
             progress_callback(85, "assigning_speakers")
