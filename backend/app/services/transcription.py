@@ -4,8 +4,12 @@ import logging
 from pathlib import Path
 from typing import Callable, Iterator
 
-from faster_whisper import WhisperModel
-from faster_whisper.transcribe import Segment
+try:
+    from faster_whisper import WhisperModel
+    WHISPER_AVAILABLE = True
+except ImportError:
+    WhisperModel = None  # type: ignore
+    WHISPER_AVAILABLE = False
 
 from app.config import settings
 
@@ -29,7 +33,7 @@ class TranscriptionResult:
         self.duration = duration
 
 
-def get_model(model_id: str, device: str = "auto", compute_type: str = "auto") -> WhisperModel:
+def get_model(model_id: str, device: str = "auto", compute_type: str = "auto") -> "WhisperModel":
     """
     Load a KB-Whisper model, using cache if available.
 
@@ -41,6 +45,9 @@ def get_model(model_id: str, device: str = "auto", compute_type: str = "auto") -
     Returns:
         Loaded WhisperModel
     """
+    if not WHISPER_AVAILABLE:
+        raise RuntimeError("faster-whisper is not installed. Install it with: pip install faster-whisper")
+
     cache_key = f"{model_id}_{device}_{compute_type}"
 
     if cache_key in _model_cache:
@@ -51,8 +58,11 @@ def get_model(model_id: str, device: str = "auto", compute_type: str = "auto") -
 
     # Determine device and compute type
     if device == "auto":
-        import torch
-        device = "cuda" if torch.cuda.is_available() else "cpu"
+        try:
+            import torch
+            device = "cuda" if torch.cuda.is_available() else "cpu"
+        except ImportError:
+            device = "cpu"
 
     if compute_type == "auto":
         compute_type = "float16" if device == "cuda" else "int8"
@@ -152,3 +162,8 @@ def clear_model_cache() -> None:
     global _model_cache
     _model_cache.clear()
     logger.info("Model cache cleared")
+
+
+def is_transcription_available() -> bool:
+    """Check if transcription service is available."""
+    return WHISPER_AVAILABLE
