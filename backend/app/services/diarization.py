@@ -8,8 +8,32 @@ from app.config import settings
 
 logger = logging.getLogger(__name__)
 
+
+def _patch_torch_load():
+    """
+    Patch torch.load to work with PyTorch 2.6+ and older pyannote models.
+    PyTorch 2.6 changed weights_only default to True, breaking older models.
+    """
+    import torch
+    if hasattr(torch, '_original_load'):
+        return  # Already patched
+
+    torch._original_load = torch.load
+
+    def patched_load(*args, **kwargs):
+        # Force weights_only=False for compatibility with pyannote models
+        if 'weights_only' not in kwargs:
+            kwargs['weights_only'] = False
+        return torch._original_load(*args, **kwargs)
+
+    torch.load = patched_load
+    logger.info("Patched torch.load for PyTorch 2.6+ compatibility")
+
 # Flag to track if diarization is available
 _diarization_available: bool | None = None
+
+# Cache for diarization model
+_diarization_model = None
 
 
 def is_diarization_available() -> bool:
@@ -58,42 +82,49 @@ def add_speaker_labels(
         Updated segments with speaker labels
     """
     if not is_diarization_available():
-        logger.warning("Diarization not available, skipping speaker identification")
-        # Update progress to skip diarization range (70% -> 90%)
-        if progress_callback:
-            progress_callback(90, "diarization_skipped")
+        logger.warning("Diarization not available, returning segments without speaker labels")
         return segments
 
     try:
         import whisperx
+        from whisperx.diarize import DiarizationPipeline
         import torch
 
+        global _diarization_model
+
         audio_path = Path(audio_path)
-
-        logger.info("Starting speaker diarization...")
-        if progress_callback:
-            progress_callback(72, "loading_diarization_model")
-
         device = "cuda" if torch.cuda.is_available() else "cpu"
-        logger.info(f"Using device: {device}")
+
+        # Load or use cached diarization model
+        if _diarization_model is None:
+            if progress_callback:
+                progress_callback(71, "loading_diarization_model")
+            logger.info("Loading diarization model (first time, may take a while)...")
+
+            # Apply PyTorch 2.6+ compatibility patch
+            _patch_torch_load()
+
+            _diarization_model = DiarizationPipeline(
+                use_auth_token=settings.hf_token,
+                device=device,
+            )
+            logger.info("Diarization model loaded successfully")
+        else:
+            logger.info("Using cached diarization model")
+
+        if progress_callback:
+            progress_callback(75, "loading_audio_for_diarization")
 
         # Load audio
-        logger.info(f"Loading audio from {audio_path}")
         audio = whisperx.load_audio(str(audio_path))
 
         if progress_callback:
-            progress_callback(75, "diarizing")
+            progress_callback(78, "diarizing")
 
         # Run diarization
-        logger.info("Initializing diarization pipeline...")
-        diarize_model = whisperx.DiarizationPipeline(
-            use_auth_token=settings.hf_token,
-            device=device,
-        )
-
-        logger.info("Running diarization (this may take a while)...")
-        diarize_segments = diarize_model(audio)
-        logger.info("Diarization completed")
+        logger.info("Running diarization...")
+        diarize_segments = _diarization_model(audio)
+        logger.info(f"Diarization returned {len(diarize_segments) if diarize_segments is not None else 0} speaker segments")
 
         if progress_callback:
             progress_callback(85, "assigning_speakers")
@@ -111,21 +142,30 @@ def add_speaker_labels(
         }
 
         # Assign speakers
+        logger.info(f"Assigning speakers to {len(segments)} transcription segments...")
         result = whisperx.assign_word_speakers(diarize_segments, whisperx_segments)
 
+        # Log what we got back
+        result_segments = result.get("segments", [])
+        logger.info(f"assign_word_speakers returned {len(result_segments)} segments")
+
         # Update original segments with speaker info
-        for i, segment in enumerate(result.get("segments", [])):
+        speakers_assigned = 0
+        unique_speakers = set()
+        for i, segment in enumerate(result_segments):
             if i < len(segments):
                 speaker = segment.get("speaker")
                 if speaker:
+                    unique_speakers.add(speaker)
                     # Convert SPEAKER_00 to "Talare 1", etc.
                     speaker_num = int(speaker.split("_")[1]) + 1
                     segments[i]["speaker"] = f"Talare {speaker_num}"
+                    speakers_assigned += 1
 
         if progress_callback:
             progress_callback(90, "diarization_complete")
 
-        logger.info(f"Diarization complete, found speakers in {len(segments)} segments")
+        logger.info(f"Diarization complete: {speakers_assigned}/{len(segments)} segments got speakers, {len(unique_speakers)} unique speakers found")
         return segments
 
     except Exception as e:

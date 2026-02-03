@@ -144,6 +144,7 @@ def run_transcription_sync(
             progress_callback=progress_callback,
         )
 
+        logger.info(f"Transcription returned {len(result.segments)} segments")
         segments = result.segments
         logger.info(f"Transcription completed: {len(segments)} segments")
 
@@ -173,15 +174,20 @@ def run_transcription_sync(
             progress_callback(95, "anonymization_unavailable")
 
         # Calculate metadata
+        logger.info("Calculating metadata...")
         speakers = set(s.get("speaker") for s in segments if s.get("speaker"))
         word_count = sum(len(s["text"].split()) for s in segments)
 
+        logger.info(f"Metadata done: {len(speakers)} speakers, {word_count} words")
         return {
             "segments": segments,
             "duration": result.duration,
             "speaker_count": len(speakers),
             "word_count": word_count,
         }
+    except Exception as e:
+        logger.exception(f"Transcription failed: {e}")
+        raise
 
 
 async def process_transcription_job(job_id: str) -> None:
@@ -232,20 +238,25 @@ async def process_transcription_job(job_id: str) -> None:
     monitor_task = asyncio.create_task(monitor_progress())
 
     try:
-        # Run transcription in thread pool
+        # Run transcription in thread pool with timeout (30 minutes max)
         loop = asyncio.get_event_loop()
-        transcription_result = await loop.run_in_executor(
-            _executor,
-            partial(
-                run_transcription_sync,
-                audio_path,
-                model_id,
-                language,
-                enable_diarization,
-                enable_anonymization,
-                progress_queue,
+        logger.info(f"Starting transcription thread for job {job_id}")
+        transcription_result = await asyncio.wait_for(
+            loop.run_in_executor(
+                _executor,
+                partial(
+                    run_transcription_sync,
+                    audio_path,
+                    model_id,
+                    language,
+                    enable_diarization,
+                    enable_anonymization,
+                    progress_queue,
+                ),
             ),
+            timeout=1800.0,  # 30 minutes
         )
+        logger.info(f"Transcription thread completed for job {job_id}")
 
         # Stop progress monitor
         monitor_task.cancel()
@@ -269,6 +280,10 @@ async def process_transcription_job(job_id: str) -> None:
 
         logger.info(f"Transcription job completed: {job_id}")
 
+    except asyncio.TimeoutError:
+        logger.error(f"Transcription job timed out after 30 minutes: {job_id}")
+        monitor_task.cancel()
+        await mark_job_failed(job_id, "Transcription timed out after 30 minutes")
     except Exception as e:
         logger.exception(f"Transcription job failed: {job_id}")
         monitor_task.cancel()

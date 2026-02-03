@@ -1,8 +1,14 @@
 """Model management endpoints."""
 
-import torch
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
+
+try:
+    import torch
+    TORCH_AVAILABLE = True
+except ImportError:
+    torch = None  # type: ignore
+    TORCH_AVAILABLE = False
 
 router = APIRouter()
 
@@ -71,6 +77,12 @@ async def list_models() -> list[ModelInfo]:
 @router.get("/system", response_model=SystemStatus)
 async def get_system_status() -> SystemStatus:
     """Get system information including GPU availability."""
+    if not TORCH_AVAILABLE:
+        return SystemStatus(
+            gpu_available=False,
+            recommended_compute_type="int8",
+        )
+
     gpu_available = torch.cuda.is_available()
 
     if gpu_available:
