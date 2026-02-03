@@ -131,10 +131,10 @@ export function EnhancedAnonymization({
           <ShieldPlus className="w-5 h-5 text-amber-600" />
           <div className="text-left">
             <h3 className="font-medium text-gray-900">
-              Forstark avidentifiering
+              Förstärk avidentifiering
             </h3>
             <p className="text-sm text-gray-500">
-              Extra skydd for GDPR - fanga skolor, sjukhus, personnummer mm.
+              Extra skydd för GDPR - fånga skolor, sjukhus, personnummer mm.
             </p>
           </div>
         </div>
@@ -165,7 +165,7 @@ export function EnhancedAnonymization({
             {hasNerAnonymization && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Kalltext
+                  Källtext
                 </label>
                 <div className="flex gap-4">
                   <label className="flex items-center gap-2 cursor-pointer">
@@ -202,9 +202,9 @@ export function EnhancedAnonymization({
                   className="w-4 h-4 text-primary-600 rounded"
                 />
                 <div>
-                  <p className="font-medium text-sm">Institutionsmonster</p>
+                  <p className="font-medium text-sm">Institutionsmönster</p>
                   <p className="text-xs text-gray-500">
-                    Skolor, sjukhus, kommuner, foretag, adresser
+                    Skolor, sjukhus, kommuner, företag, adresser
                   </p>
                 </div>
               </label>
@@ -217,7 +217,7 @@ export function EnhancedAnonymization({
                   className="w-4 h-4 text-primary-600 rounded"
                 />
                 <div>
-                  <p className="font-medium text-sm">Formatmonster</p>
+                  <p className="font-medium text-sm">Formatmönster</p>
                   <p className="text-xs text-gray-500">
                     Personnummer, telefon, e-post, postnummer
                   </p>
@@ -228,7 +228,7 @@ export function EnhancedAnonymization({
             {/* Custom words */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Egna ord att ersatta
+                Egna ord att ersätta
               </label>
               <div className="flex gap-2 mb-2">
                 <input
@@ -240,7 +240,7 @@ export function EnhancedAnonymization({
                 />
                 <input
                   type="text"
-                  placeholder="Ersattning (t.ex. [PERSON 3])"
+                  placeholder="Ersättning (t.ex. [PERSON 3])"
                   value={newReplacement}
                   onChange={(e) => setNewReplacement(e.target.value)}
                   className="flex-1 px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
@@ -292,7 +292,7 @@ export function EnhancedAnonymization({
               className="w-full"
             >
               <Play className="w-4 h-4 mr-2" />
-              Kor forstark avidentifiering
+              Kör förstärkt avidentifiering
             </Button>
 
             {/* Error */}
@@ -300,10 +300,10 @@ export function EnhancedAnonymization({
               <div className="flex items-center gap-2 p-3 bg-red-50 text-red-700 rounded-lg text-sm">
                 <AlertCircle className="w-4 h-4 flex-shrink-0" />
                 <span>
-                  Nagot gick fel:{" "}
+                  Något gick fel:{" "}
                   {mutation.error instanceof Error
                     ? mutation.error.message
-                    : "Okant fel"}
+                    : "Okänt fel"}
                 </span>
               </div>
             )}
@@ -316,7 +316,7 @@ export function EnhancedAnonymization({
                   <CheckCircle className="w-4 h-4 flex-shrink-0" />
                   <span>
                     Klart! {result.changes_count} av {result.segments.length}{" "}
-                    segment andrades.
+                    segment ändrades.
                   </span>
                 </div>
 
@@ -339,7 +339,7 @@ export function EnhancedAnonymization({
                 {/* Preview */}
                 <div>
                   <h4 className="text-sm font-medium text-gray-700 mb-2">
-                    Forhandsvisning
+                    Förhandsvisning
                   </h4>
                   <div className="max-h-[300px] overflow-y-auto border rounded-lg">
                     {result.segments.map((segment) => (
