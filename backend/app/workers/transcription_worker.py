@@ -1,5 +1,32 @@
 """Background worker for processing transcription jobs."""
 
+# Set environment variable for PyTorch 2.6+ compatibility BEFORE importing torch
+import os
+os.environ["TORCH_FORCE_WEIGHTS_ONLY_LOAD"] = "0"
+
+# Also patch torch.load as backup
+def _ensure_torch_patched():
+    try:
+        import torch
+        import torch.serialization
+        # Add safe globals for pyannote compatibility
+        try:
+            torch.serialization.add_safe_globals([torch.torch_version.TorchVersion])
+        except Exception:
+            pass
+        # Patch torch.load to use weights_only=False by default
+        if not hasattr(torch, '_original_load'):
+            torch._original_load = torch.load
+            def patched_load(*args, **kwargs):
+                if 'weights_only' not in kwargs:
+                    kwargs['weights_only'] = False
+                return torch._original_load(*args, **kwargs)
+            torch.load = patched_load
+    except ImportError:
+        pass
+
+_ensure_torch_patched()
+
 import asyncio
 import logging
 import queue
@@ -114,12 +141,20 @@ async def save_segments(job_id: str, segments: list[dict]) -> None:
         await db.commit()
 
 
+def parse_ner_entity_types(ner_entity_types_str: str | None) -> set[str] | None:
+    """Parse NER entity types from comma-separated string."""
+    if not ner_entity_types_str:
+        return None
+    return set(ner_entity_types_str.split(","))
+
+
 def run_transcription_sync(
     audio_path: str,
     model_id: str,
     language: str,
     enable_diarization: bool,
     enable_anonymization: bool,
+    ner_entity_types_str: str | None,
     progress_queue: queue.Queue,
 ) -> dict:
     """
@@ -164,9 +199,11 @@ def run_transcription_sync(
         # Anonymize sensitive information if enabled
         if enable_anonymization and is_anonymization_available():
             logger.info("Starting anonymization...")
+            entity_types = parse_ner_entity_types(ner_entity_types_str)
             segments = anonymize_segments(
                 segments=segments,
                 progress_callback=progress_callback,
+                entity_types=entity_types,
             )
             logger.info("Anonymization completed")
         elif enable_anonymization:
@@ -213,6 +250,7 @@ async def process_transcription_job(job_id: str) -> None:
         language = job.language
         enable_diarization = job.enable_diarization
         enable_anonymization = job.enable_anonymization
+        ner_entity_types_str = job.ner_entity_types
 
     # Mark as started
     await mark_job_started(job_id)
@@ -251,6 +289,7 @@ async def process_transcription_job(job_id: str) -> None:
                     language,
                     enable_diarization,
                     enable_anonymization,
+                    ner_entity_types_str,
                     progress_queue,
                 ),
             ),

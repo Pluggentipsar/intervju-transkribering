@@ -16,6 +16,16 @@ class JobStatus(str, Enum):
     CANCELLED = "cancelled"
 
 
+class NerEntityTypesConfig(BaseModel):
+    """Configuration for which NER entity types to anonymize."""
+
+    persons: bool = True  # Person names
+    locations: bool = True  # Locations/places
+    organizations: bool = True  # Organizations
+    dates: bool = True  # Time expressions/dates
+    events: bool = True  # Events
+
+
 class JobCreate(BaseModel):
     """Schema for creating a new transcription job."""
 
@@ -24,6 +34,7 @@ class JobCreate(BaseModel):
     enable_diarization: bool = True
     enable_anonymization: bool = False
     language: str = "sv"
+    ner_entity_types: NerEntityTypesConfig | None = None
 
 
 class JobResponse(BaseModel):

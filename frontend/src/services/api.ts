@@ -11,6 +11,11 @@ import type {
   SystemStatus,
   TranscriptResponse,
   UploadResponse,
+  EnhancedAnonymizationRequest,
+  EnhancedAnonymizationResponse,
+  TextAnonymizationRequest,
+  TextAnonymizationResponse,
+  AnonymizationStatus,
 } from "@/types";
 
 const api = axios.create({
@@ -77,5 +82,33 @@ export async function listModels(): Promise<ModelInfo[]> {
 
 export async function getSystemStatus(): Promise<SystemStatus> {
   const response = await api.get<SystemStatus>("/models/system");
+  return response.data;
+}
+
+// Enhanced anonymization
+export async function enhanceAnonymization(
+  jobId: string,
+  request: EnhancedAnonymizationRequest
+): Promise<EnhancedAnonymizationResponse> {
+  const response = await api.post<EnhancedAnonymizationResponse>(
+    `/jobs/${jobId}/enhance-anonymization`,
+    request
+  );
+  return response.data;
+}
+
+// Standalone text anonymization
+export async function anonymizeText(
+  request: TextAnonymizationRequest
+): Promise<TextAnonymizationResponse> {
+  const response = await api.post<TextAnonymizationResponse>(
+    "/anonymize",
+    request
+  );
+  return response.data;
+}
+
+export async function getAnonymizationStatus(): Promise<AnonymizationStatus> {
+  const response = await api.get<AnonymizationStatus>("/anonymize/status");
   return response.data;
 }

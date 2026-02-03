@@ -2,6 +2,7 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
+import { Header } from "@/components/layout/Header";
 import "./globals.css";
 
 export default function RootLayout({
@@ -24,37 +25,18 @@ export default function RootLayout({
   return (
     <html lang="sv">
       <head>
-        <title>Intervju-Transkribering</title>
-        <meta name="description" content="Transkribera intervjuer med KB Whisper" />
+        <title>TystText | Transkribera & Avidentifiera</title>
+        <meta name="description" content="TystText - Transkribera och avidentifiera intervjuer med KB Whisper. Sveriges bästa AI för svenska. Automatisk talaridentifiering och anonymisering." />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
       </head>
-      <body>
+      <body className="min-h-screen bg-gray-50 antialiased">
         <QueryClientProvider client={queryClient}>
-          <div className="min-h-screen bg-gray-50">
-            <header className="bg-white shadow-sm border-b">
-              <div className="max-w-7xl mx-auto px-4 py-4">
-                <div className="flex items-center justify-between">
-                  <a href="/" className="text-xl font-semibold text-gray-900">
-                    Intervju-Transkribering
-                  </a>
-                  <nav className="flex gap-6">
-                    <a
-                      href="/"
-                      className="text-gray-600 hover:text-gray-900 transition-colors"
-                    >
-                      Ny transkription
-                    </a>
-                    <a
-                      href="/jobs"
-                      className="text-gray-600 hover:text-gray-900 transition-colors"
-                    >
-                      Mina jobb
-                    </a>
-                  </nav>
-                </div>
-              </div>
-            </header>
-            <main className="max-w-7xl mx-auto px-4 py-8">{children}</main>
-          </div>
+          <Header />
+          <main>
+            {children}
+          </main>
         </QueryClientProvider>
       </body>
     </html>

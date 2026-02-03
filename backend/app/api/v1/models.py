@@ -1,6 +1,6 @@
 """Model management endpoints."""
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter
 from pydantic import BaseModel
 
 try:

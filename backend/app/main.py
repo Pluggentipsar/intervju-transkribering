@@ -1,5 +1,23 @@
 """FastAPI application entry point."""
 
+# Patch torch.load BEFORE any other imports that might use torch
+# This fixes PyTorch 2.6+ compatibility with pyannote models
+def _patch_torch_load():
+    try:
+        import torch
+        if hasattr(torch, '_original_load'):
+            return
+        torch._original_load = torch.load
+        def patched_load(*args, **kwargs):
+            if 'weights_only' not in kwargs:
+                kwargs['weights_only'] = False
+            return torch._original_load(*args, **kwargs)
+        torch.load = patched_load
+    except ImportError:
+        pass
+
+_patch_torch_load()
+
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 

@@ -13,6 +13,15 @@ import { Button } from "@/components/ui/Button";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { uploadFile, createJob } from "@/services/api";
 import { useJobPolling } from "@/hooks/usePolling";
+import type { NerEntityTypesConfig } from "@/types";
+
+const DEFAULT_NER_ENTITY_TYPES: NerEntityTypesConfig = {
+  persons: true,
+  locations: true,
+  organizations: true,
+  dates: true,
+  events: true,
+};
 
 const STEP_LABELS: Record<string, string> = {
   uploading: "Laddar upp fil...",
@@ -42,8 +51,13 @@ export function UploadForm() {
   const [selectedModel, setSelectedModel] = useState("KBLab/kb-whisper-small");
   const [enableDiarization, setEnableDiarization] = useState(true);
   const [enableAnonymization, setEnableAnonymization] = useState(false);
+  const [nerEntityTypes, setNerEntityTypes] = useState<NerEntityTypesConfig>(DEFAULT_NER_ENTITY_TYPES);
   const [currentJobId, setCurrentJobId] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
+
+  const handleEntityTypeChange = (type: keyof NerEntityTypesConfig, checked: boolean) => {
+    setNerEntityTypes((prev) => ({ ...prev, [type]: checked }));
+  };
 
   // Poll job status
   const { data: job } = useJobPolling(currentJobId);
@@ -63,6 +77,7 @@ export function UploadForm() {
         enable_diarization: enableDiarization,
         enable_anonymization: enableAnonymization,
         language: "sv",
+        ner_entity_types: enableAnonymization ? nerEntityTypes : undefined,
       });
 
       return jobResult;
@@ -99,12 +114,15 @@ export function UploadForm() {
   const progress = job?.progress || uploadProgress;
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="divide-y divide-gray-100">
       {/* File Upload */}
-      <div className="bg-white rounded-xl shadow-sm border p-6">
-        <h2 className="text-lg font-medium text-gray-900 mb-4">
+      <div className="p-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-1">
           1. Välj ljudfil
         </h2>
+        <p className="text-sm text-gray-500 mb-4">
+          Dra och släpp eller klicka för att välja fil
+        </p>
         <FileDropzone
           onFileSelect={setSelectedFile}
           selectedFile={selectedFile}
@@ -114,10 +132,13 @@ export function UploadForm() {
       </div>
 
       {/* Model Selection */}
-      <div className="bg-white rounded-xl shadow-sm border p-6">
-        <h2 className="text-lg font-medium text-gray-900 mb-4">
+      <div className="p-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-1">
           2. Välj inställningar
         </h2>
+        <p className="text-sm text-gray-500 mb-4">
+          Anpassa transkriberingen efter dina behov
+        </p>
         <ModelSelector
           selectedModel={selectedModel}
           onModelSelect={setSelectedModel}
@@ -160,13 +181,42 @@ export function UploadForm() {
               </p>
             </div>
           </label>
+
+          {/* NER Entity Type Selection */}
+          {enableAnonymization && (
+            <div className="mt-3 ml-7 pl-3 border-l-2 border-blue-200 space-y-1">
+              <p className="text-xs text-gray-500 mb-2">Välj vilka typer som ska avidentifieras:</p>
+              {[
+                { key: "persons" as const, label: "Personnamn", desc: "Namn på personer" },
+                { key: "locations" as const, label: "Platser", desc: "Geografiska platser" },
+                { key: "organizations" as const, label: "Organisationer", desc: "Företag, myndigheter" },
+                { key: "dates" as const, label: "Datum/tid", desc: "Tidsuttryck" },
+                { key: "events" as const, label: "Händelser", desc: "Namngivna händelser" },
+              ].map((item) => (
+                <label
+                  key={item.key}
+                  className="flex items-center gap-2 p-2 rounded hover:bg-blue-50 cursor-pointer"
+                >
+                  <input
+                    type="checkbox"
+                    checked={nerEntityTypes[item.key]}
+                    onChange={(e) => handleEntityTypeChange(item.key, e.target.checked)}
+                    disabled={isProcessing}
+                    className="w-3.5 h-3.5 text-blue-600 rounded"
+                  />
+                  <span className="text-sm">{item.label}</span>
+                  <span className="text-xs text-gray-400">- {item.desc}</span>
+                </label>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
       {/* Progress / Status */}
       {(isProcessing || isComplete || isFailed) && (
-        <div className="bg-white rounded-xl shadow-sm border p-6">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">
+        <div className="p-6 bg-gray-50">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">
             3. Status
           </h2>
 
@@ -192,7 +242,7 @@ export function UploadForm() {
       )}
 
       {/* Actions */}
-      <div className="flex gap-3">
+      <div className="p-6 bg-gradient-to-r from-gray-50 to-white flex gap-3">
         {!isProcessing && !isComplete && (
           <Button
             type="submit"

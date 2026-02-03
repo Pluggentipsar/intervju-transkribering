@@ -1,6 +1,5 @@
 """File upload endpoints."""
 
-import shutil
 from pathlib import Path
 from uuid import uuid4
 

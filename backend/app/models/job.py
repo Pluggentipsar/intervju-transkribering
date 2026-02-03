@@ -42,6 +42,8 @@ class Job(Base):
     enable_diarization: Mapped[bool] = mapped_column(Boolean, default=True)
     enable_anonymization: Mapped[bool] = mapped_column(Boolean, default=False)
     language: Mapped[str] = mapped_column(String(10), default="sv")
+    # NER entity types to anonymize (stored as comma-separated string: "persons,locations,organizations,dates,events")
+    ner_entity_types: Mapped[str | None] = mapped_column(String(200), nullable=True, default=None)
 
     # Status
     status: Mapped[JobStatus] = mapped_column(

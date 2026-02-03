@@ -19,6 +19,7 @@ import { getJob, getTranscript, getExportUrl } from "@/services/api";
 import { Button } from "@/components/ui/Button";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { TranscriptViewer } from "@/components/transcription/TranscriptViewer";
+import { EnhancedAnonymization } from "@/components/transcription/EnhancedAnonymization";
 import { useJobPolling } from "@/hooks/usePolling";
 
 const STEP_LABELS: Record<string, string> = {
@@ -209,6 +210,17 @@ export default function JobDetailPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Enhanced anonymization panel */}
+      {isComplete && transcript && (
+        <EnhancedAnonymization
+          jobId={jobId}
+          hasNerAnonymization={transcript.segments.some(
+            (s) => s.anonymized_text && s.anonymized_text !== s.text
+          )}
+          className="mb-6"
+        />
       )}
 
       {/* Transcript viewer */}

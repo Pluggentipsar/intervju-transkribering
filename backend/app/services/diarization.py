@@ -1,33 +1,23 @@
 """Speaker diarization service using WhisperX and pyannote."""
 
 import logging
+import os
 from pathlib import Path
 from typing import Callable
+
+# Add ffmpeg to PATH if installed via winget (Windows)
+_ffmpeg_paths = [
+    r"C:\Users\plugg\AppData\Local\Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-8.0.1-full_build\bin",
+    r"C:\ffmpeg\bin",
+]
+for _ffmpeg_path in _ffmpeg_paths:
+    if os.path.exists(_ffmpeg_path) and _ffmpeg_path not in os.environ.get("PATH", ""):
+        os.environ["PATH"] = _ffmpeg_path + os.pathsep + os.environ.get("PATH", "")
+        break
 
 from app.config import settings
 
 logger = logging.getLogger(__name__)
-
-
-def _patch_torch_load():
-    """
-    Patch torch.load to work with PyTorch 2.6+ and older pyannote models.
-    PyTorch 2.6 changed weights_only default to True, breaking older models.
-    """
-    import torch
-    if hasattr(torch, '_original_load'):
-        return  # Already patched
-
-    torch._original_load = torch.load
-
-    def patched_load(*args, **kwargs):
-        # Force weights_only=False for compatibility with pyannote models
-        if 'weights_only' not in kwargs:
-            kwargs['weights_only'] = False
-        return torch._original_load(*args, **kwargs)
-
-    torch.load = patched_load
-    logger.info("Patched torch.load for PyTorch 2.6+ compatibility")
 
 # Flag to track if diarization is available
 _diarization_available: bool | None = None
@@ -36,12 +26,33 @@ _diarization_available: bool | None = None
 _diarization_model = None
 
 
+def _patch_torch_for_pyannote():
+    """Patch torch.load for PyTorch 2.6+ compatibility with pyannote models."""
+    try:
+        import torch
+        if not hasattr(torch, '_patched_for_pyannote'):
+            original_load = torch.load
+
+            def safe_load(*args, **kwargs):
+                kwargs['weights_only'] = False
+                return original_load(*args, **kwargs)
+
+            torch.load = safe_load
+            torch._patched_for_pyannote = True
+            logger.info("Patched torch.load for pyannote compatibility")
+    except ImportError:
+        pass
+
+
 def is_diarization_available() -> bool:
     """Check if diarization dependencies are installed and configured."""
     global _diarization_available
 
     if _diarization_available is not None:
         return _diarization_available
+
+    # Patch torch BEFORE importing pyannote
+    _patch_torch_for_pyannote()
 
     try:
         import whisperx
@@ -86,9 +97,12 @@ def add_speaker_labels(
         return segments
 
     try:
+        # Ensure torch is patched before any pyannote imports
+        _patch_torch_for_pyannote()
+
+        import torch
         import whisperx
         from whisperx.diarize import DiarizationPipeline
-        import torch
 
         global _diarization_model
 
@@ -100,9 +114,6 @@ def add_speaker_labels(
             if progress_callback:
                 progress_callback(71, "loading_diarization_model")
             logger.info("Loading diarization model (first time, may take a while)...")
-
-            # Apply PyTorch 2.6+ compatibility patch
-            _patch_torch_load()
 
             _diarization_model = DiarizationPipeline(
                 use_auth_token=settings.hf_token,

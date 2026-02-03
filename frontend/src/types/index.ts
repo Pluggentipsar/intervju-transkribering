@@ -82,4 +82,91 @@ export interface JobCreateRequest {
   enable_diarization: boolean;
   enable_anonymization: boolean;
   language: string;
+  ner_entity_types?: NerEntityTypesConfig;
+}
+
+// Enhanced anonymization types
+export interface CustomPatternItem {
+  pattern: string;
+  replacement: string;
+}
+
+export interface CustomWordItem {
+  word: string;
+  replacement: string;
+}
+
+export interface EnhancedAnonymizationRequest {
+  use_institution_patterns: boolean;
+  use_format_patterns: boolean;
+  custom_patterns: CustomPatternItem[];
+  custom_words: CustomWordItem[];
+  source_field: "text" | "anonymized_text";
+}
+
+export interface EnhancedSegment {
+  segment_index: number;
+  start_time: number;
+  end_time: number;
+  text: string;
+  anonymized_text: string | null;
+  enhanced_anonymized_text: string | null;
+  speaker: string | null;
+}
+
+export interface EnhancedAnonymizationResponse {
+  job_id: string;
+  segments: EnhancedSegment[];
+  changes_count: number;
+  patterns_applied: {
+    institution_patterns: boolean;
+    format_patterns: boolean;
+    custom_patterns: boolean;
+    custom_words: boolean;
+  };
+}
+
+// Standalone text anonymization types
+export interface NerEntityTypesConfig {
+  persons: boolean;
+  locations: boolean;
+  organizations: boolean;
+  dates: boolean;
+  events: boolean;
+}
+
+export interface TextAnonymizationRequest {
+  text: string;
+  use_ner: boolean;
+  ner_entity_types: NerEntityTypesConfig;
+  use_institution_patterns: boolean;
+  use_format_patterns: boolean;
+  custom_patterns: [string, string][];
+  custom_words: [string, string][];
+}
+
+export interface TextAnonymizationResponse {
+  original_text: string;
+  anonymized_text: string;
+  ner_applied: boolean;
+  patterns_applied: {
+    ner: boolean;
+    institution_patterns: boolean;
+    format_patterns: boolean;
+    custom_patterns: boolean;
+    custom_words: boolean;
+  };
+  entities_found: number;
+  patterns_matched: number;
+}
+
+export interface NerEntityTypeInfo {
+  label: string;
+  description: string;
+}
+
+export interface AnonymizationStatus {
+  ner_available: boolean;
+  pattern_anonymization_available: boolean;
+  ner_entity_types: Record<string, NerEntityTypeInfo>;
 }
