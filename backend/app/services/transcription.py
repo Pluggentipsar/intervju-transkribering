@@ -126,6 +126,7 @@ def transcribe_audio(
             min_silence_duration_ms=500,
         ),
         condition_on_previous_text=False,  # Better for long audio
+        word_timestamps=True,  # Enable word-level timestamps for audio editing
     )
 
     # Collect segments with progress tracking
@@ -134,11 +135,23 @@ def transcribe_audio(
     last_progress = 15
 
     for segment in segments_iter:
+        # Extract word-level data if available
+        words = []
+        if hasattr(segment, "words") and segment.words:
+            for word in segment.words:
+                words.append({
+                    "start": word.start,
+                    "end": word.end,
+                    "text": word.word,
+                    "confidence": getattr(word, "probability", None),
+                })
+
         segment_dict = {
             "start": segment.start,
             "end": segment.end,
             "text": segment.text.strip(),
             "confidence": getattr(segment, "avg_logprob", None),
+            "words": words,
         }
         segments.append(segment_dict)
 

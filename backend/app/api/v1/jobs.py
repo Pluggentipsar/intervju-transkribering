@@ -13,11 +13,18 @@ from app.db.database import get_db
 from app.models.job import Job
 from app.models.job import JobStatus as DBJobStatus
 from app.schemas.job import JobCreate, JobListResponse, JobResponse
+from app.models.segment import Segment
 from app.schemas.segment import (
     EnhancedAnonymizationRequest,
     EnhancedAnonymizationResponse,
     EnhancedSegmentResponse,
+    SearchResponse,
+    SearchResultJob,
+    SearchResultSegment,
     SegmentResponse,
+    SegmentUpdate,
+    SpeakerRename,
+    SpeakerRenameResponse,
     TranscriptMetadata,
     TranscriptResponse,
 )
@@ -288,4 +295,154 @@ async def enhance_anonymization(
             "custom_patterns": bool(custom_patterns),
             "custom_words": bool(custom_words),
         },
+    )
+
+
+@router.patch("/{job_id}/segments/{segment_id}", response_model=SegmentResponse)
+async def update_segment(
+    job_id: str,
+    segment_id: int,
+    update: SegmentUpdate,
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> Segment:
+    """
+    Update a segment's text or speaker.
+
+    Use this to correct transcription errors or assign speaker names.
+    """
+    # Find the segment
+    query = select(Segment).where(Segment.id == segment_id, Segment.job_id == job_id)
+    result = await db.execute(query)
+    segment = result.scalar_one_or_none()
+
+    if not segment:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Segmentet hittades inte",
+        )
+
+    # Update fields if provided
+    if update.text is not None:
+        segment.text = update.text
+    if update.speaker is not None:
+        segment.speaker = update.speaker if update.speaker else None
+
+    await db.commit()
+    await db.refresh(segment)
+
+    return segment
+
+
+@router.post("/{job_id}/rename-speaker", response_model=SpeakerRenameResponse)
+async def rename_speaker(
+    job_id: str,
+    rename: SpeakerRename,
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> SpeakerRenameResponse:
+    """
+    Rename a speaker across all segments in a job.
+
+    Useful for replacing generic names like "Talare 1" with actual names.
+    """
+    # Verify job exists
+    job_query = select(Job).where(Job.id == job_id)
+    job_result = await db.execute(job_query)
+    job = job_result.scalar_one_or_none()
+
+    if not job:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Jobbet hittades inte",
+        )
+
+    # Find all segments with the old speaker name
+    segments_query = select(Segment).where(
+        Segment.job_id == job_id, Segment.speaker == rename.old_name
+    )
+    result = await db.execute(segments_query)
+    segments = result.scalars().all()
+
+    if not segments:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Inga segment hittades med talaren '{rename.old_name}'",
+        )
+
+    # Update all segments
+    for segment in segments:
+        segment.speaker = rename.new_name
+
+    await db.commit()
+
+    return SpeakerRenameResponse(
+        job_id=job_id,
+        old_name=rename.old_name,
+        new_name=rename.new_name,
+        segments_updated=len(segments),
+    )
+
+
+@router.get("/search/global", response_model=SearchResponse)
+async def search_transcripts(
+    q: str,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    limit: int = 50,
+) -> SearchResponse:
+    """
+    Search across all transcripts for matching text.
+
+    Returns jobs with matching segments, grouped by job.
+    """
+    if not q or len(q.strip()) < 2:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Sökfrågan måste vara minst 2 tecken",
+        )
+
+    search_term = f"%{q.strip()}%"
+
+    # Find matching segments with their jobs
+    query = (
+        select(Segment, Job)
+        .join(Job, Segment.job_id == Job.id)
+        .where(Segment.text.ilike(search_term))
+        .where(Job.status == DBJobStatus.COMPLETED)
+        .order_by(Job.created_at.desc(), Segment.segment_index)
+        .limit(limit)
+    )
+
+    result = await db.execute(query)
+    rows = result.all()
+
+    # Group results by job
+    jobs_map: dict[str, SearchResultJob] = {}
+    for segment, job in rows:
+        if job.id not in jobs_map:
+            jobs_map[job.id] = SearchResultJob(
+                job_id=job.id,
+                file_name=job.file_name,
+                created_at=job.created_at.isoformat(),
+                segments=[],
+                total_matches=0,
+            )
+
+        jobs_map[job.id].segments.append(
+            SearchResultSegment(
+                segment_index=segment.segment_index,
+                start_time=segment.start_time,
+                end_time=segment.end_time,
+                text=segment.text,
+                speaker=segment.speaker,
+            )
+        )
+        jobs_map[job.id].total_matches += 1
+
+    results = list(jobs_map.values())
+    total_segments = sum(job.total_matches for job in results)
+
+    return SearchResponse(
+        query=q.strip(),
+        results=results,
+        total_jobs=len(results),
+        total_segments=total_segments,
     )

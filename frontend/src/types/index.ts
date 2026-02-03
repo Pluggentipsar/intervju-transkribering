@@ -170,3 +170,103 @@ export interface AnonymizationStatus {
   pattern_anonymization_available: boolean;
   ner_entity_types: Record<string, NerEntityTypeInfo>;
 }
+
+// Segment editing types
+export interface SegmentUpdate {
+  text?: string;
+  speaker?: string;
+}
+
+export interface SpeakerRename {
+  old_name: string;
+  new_name: string;
+}
+
+export interface SpeakerRenameResponse {
+  job_id: string;
+  old_name: string;
+  new_name: string;
+  segments_updated: number;
+}
+
+// Word template types
+export interface WordTemplate {
+  id: string;
+  name: string;
+  description: string | null;
+  words: CustomWordItem[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface WordTemplateCreate {
+  name: string;
+  description?: string;
+  words: CustomWordItem[];
+}
+
+export interface WordTemplateListResponse {
+  templates: WordTemplate[];
+  total: number;
+}
+
+// Search types
+export interface SearchResultSegment {
+  segment_index: number;
+  start_time: number;
+  end_time: number;
+  text: string;
+  speaker: string | null;
+}
+
+export interface SearchResultJob {
+  job_id: string;
+  file_name: string;
+  created_at: string;
+  segments: SearchResultSegment[];
+  total_matches: number;
+}
+
+export interface SearchResponse {
+  query: string;
+  results: SearchResultJob[];
+  total_jobs: number;
+  total_segments: number;
+}
+
+// Audio editor types
+export interface EditorWord {
+  id: number;
+  word_index: number;
+  start_time: number;
+  end_time: number;
+  text: string;
+  confidence: number | null;
+  included: boolean;
+}
+
+export interface EditorSegment {
+  id: number;
+  segment_index: number;
+  start_time: number;
+  end_time: number;
+  text: string;
+  speaker: string | null;
+  words: EditorWord[];
+}
+
+export interface EditableTranscript {
+  job_id: string;
+  file_name: string;
+  duration: number;
+  segments: EditorSegment[];
+}
+
+export interface WordEditRequest {
+  word_ids: number[];
+  included: boolean;
+}
+
+export interface WordEditResponse {
+  updated_count: number;
+}

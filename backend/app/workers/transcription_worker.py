@@ -41,6 +41,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.database import async_session_maker
 from app.models.job import Job, JobStatus
 from app.models.segment import Segment
+from app.models.word import Word
 from app.services.transcription import transcribe_audio
 from app.services.diarization import add_speaker_labels, is_diarization_available
 from app.services.anonymization import anonymize_segments, is_anonymization_available
@@ -123,7 +124,7 @@ async def mark_job_failed(job_id: str, error_message: str) -> None:
 
 
 async def save_segments(job_id: str, segments: list[dict]) -> None:
-    """Save transcription segments to the database."""
+    """Save transcription segments and words to the database."""
     async with async_session_maker() as db:
         for i, seg_data in enumerate(segments):
             segment = Segment(
@@ -137,6 +138,21 @@ async def save_segments(job_id: str, segments: list[dict]) -> None:
                 confidence=seg_data.get("confidence"),
             )
             db.add(segment)
+            await db.flush()  # Get the segment ID
+
+            # Save word-level timestamps if available
+            words_data = seg_data.get("words", [])
+            for j, word_data in enumerate(words_data):
+                word = Word(
+                    segment_id=segment.id,
+                    word_index=j,
+                    start_time=word_data["start"],
+                    end_time=word_data["end"],
+                    text=word_data["text"],
+                    confidence=word_data.get("confidence"),
+                    included=True,
+                )
+                db.add(word)
 
         await db.commit()
 

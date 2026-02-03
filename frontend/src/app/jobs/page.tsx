@@ -19,6 +19,7 @@ import Link from "next/link";
 import { listJobs } from "@/services/api";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { Button } from "@/components/ui/Button";
+import { GlobalSearch } from "@/components/search/GlobalSearch";
 import type { Job, JobStatus } from "@/types";
 
 const STATUS_CONFIG: Record<
@@ -212,9 +213,16 @@ export default function JobsPage() {
             </Link>
           </div>
 
+          {/* Search */}
+          {jobs.length > 0 && (
+            <div className="mt-8">
+              <GlobalSearch />
+            </div>
+          )}
+
           {/* Stats pills */}
           {jobs.length > 0 && (
-            <div className="flex flex-wrap gap-3 mt-8">
+            <div className="flex flex-wrap gap-3 mt-6">
               {processingJobs.length > 0 && (
                 <div className="flex items-center gap-2 px-4 py-2 bg-blue-500/20 border border-blue-400/30 rounded-full text-sm text-blue-300">
                   <Loader2 className="w-4 h-4 animate-spin" />

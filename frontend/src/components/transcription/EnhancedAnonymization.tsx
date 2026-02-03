@@ -4,8 +4,8 @@
 
 "use client";
 
-import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { clsx } from "clsx";
 import {
   ShieldPlus,
@@ -16,20 +16,28 @@ import {
   AlertCircle,
   Copy,
   Download,
+  ListPlus,
+  X,
+  Save,
+  FolderOpen,
+  FileText,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { enhanceAnonymization } from "@/services/api";
+import { enhanceAnonymization, listTemplates, createTemplate, deleteTemplate } from "@/services/api";
 import type {
   CustomWordItem,
   EnhancedAnonymizationRequest,
   EnhancedAnonymizationResponse,
   EnhancedSegment,
+  WordTemplate,
 } from "@/types";
 
 interface EnhancedAnonymizationProps {
   jobId: string;
   hasNerAnonymization: boolean;
   className?: string;
+  /** Callback when enhanced anonymization result changes */
+  onHasEnhancedResult?: (hasResult: boolean) => void;
 }
 
 function formatTimestamp(seconds: number): string {
@@ -46,6 +54,7 @@ export function EnhancedAnonymization({
   jobId,
   hasNerAnonymization,
   className,
+  onHasEnhancedResult,
 }: EnhancedAnonymizationProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [useInstitutionPatterns, setUseInstitutionPatterns] = useState(true);
@@ -56,8 +65,25 @@ export function EnhancedAnonymization({
   const [customWords, setCustomWords] = useState<CustomWordItem[]>([]);
   const [newWord, setNewWord] = useState("");
   const [newReplacement, setNewReplacement] = useState("");
+  const [showBulkImport, setShowBulkImport] = useState(false);
+  const [bulkText, setBulkText] = useState("");
   const [result, setResult] = useState<EnhancedAnonymizationResponse | null>(null);
   const [copied, setCopied] = useState(false);
+
+  // Template state
+  const [showTemplates, setShowTemplates] = useState(false);
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [templateName, setTemplateName] = useState("");
+  const [templateDescription, setTemplateDescription] = useState("");
+
+  const queryClient = useQueryClient();
+
+  // Fetch templates
+  const { data: templatesData } = useQuery({
+    queryKey: ["templates"],
+    queryFn: listTemplates,
+    enabled: showTemplates,
+  });
 
   const mutation = useMutation({
     mutationFn: (request: EnhancedAnonymizationRequest) =>
@@ -66,6 +92,48 @@ export function EnhancedAnonymization({
       setResult(data);
     },
   });
+
+  // Save template mutation
+  const saveTemplateMutation = useMutation({
+    mutationFn: () =>
+      createTemplate({
+        name: templateName.trim(),
+        description: templateDescription.trim() || undefined,
+        words: customWords,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["templates"] });
+      setShowSaveDialog(false);
+      setTemplateName("");
+      setTemplateDescription("");
+    },
+  });
+
+  // Delete template mutation
+  const deleteTemplateMutation = useMutation({
+    mutationFn: deleteTemplate,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["templates"] });
+    },
+  });
+
+  // Load template
+  const handleLoadTemplate = (template: WordTemplate) => {
+    setCustomWords(template.words);
+    setShowTemplates(false);
+  };
+
+  // Save template
+  const handleSaveTemplate = () => {
+    if (templateName.trim() && customWords.length > 0) {
+      saveTemplateMutation.mutate();
+    }
+  };
+
+  // Notify parent when result changes
+  useEffect(() => {
+    onHasEnhancedResult?.(result !== null);
+  }, [result, onHasEnhancedResult]);
 
   const handleAddWord = () => {
     if (newWord.trim() && newReplacement.trim()) {
@@ -80,6 +148,36 @@ export function EnhancedAnonymization({
 
   const handleRemoveWord = (index: number) => {
     setCustomWords(customWords.filter((_, i) => i !== index));
+  };
+
+  const handleBulkImport = () => {
+    if (!bulkText.trim()) return;
+
+    // Parse bulk text: supports "word:replacement" or "word→replacement"
+    // Separators: newline, comma, or semicolon
+    const entries = bulkText
+      .split(/[\n,;]+/)
+      .map((entry) => entry.trim())
+      .filter((entry) => entry.length > 0);
+
+    const newItems: CustomWordItem[] = [];
+    for (const entry of entries) {
+      // Try different separators: ":", "→", " -> ", " - "
+      const match = entry.match(/^(.+?)(?::|→|->| - )(.+)$/);
+      if (match) {
+        const word = match[1].trim();
+        const replacement = match[2].trim();
+        if (word && replacement) {
+          newItems.push({ word, replacement });
+        }
+      }
+    }
+
+    if (newItems.length > 0) {
+      setCustomWords([...customWords, ...newItems]);
+      setBulkText("");
+      setShowBulkImport(false);
+    }
   };
 
   const handleRun = () => {
@@ -227,9 +325,177 @@ export function EnhancedAnonymization({
 
             {/* Custom words */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Egna ord att ersätta
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Egna ord att ersätta
+                </label>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setShowTemplates(!showTemplates)}
+                    className="text-xs text-primary-600 hover:text-primary-700 flex items-center gap-1"
+                  >
+                    <FolderOpen className="w-3.5 h-3.5" />
+                    Mallar
+                  </button>
+                  {customWords.length > 0 && (
+                    <button
+                      onClick={() => setShowSaveDialog(true)}
+                      className="text-xs text-green-600 hover:text-green-700 flex items-center gap-1"
+                    >
+                      <Save className="w-3.5 h-3.5" />
+                      Spara som mall
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setShowBulkImport(!showBulkImport)}
+                    className="text-xs text-primary-600 hover:text-primary-700 flex items-center gap-1"
+                  >
+                    <ListPlus className="w-3.5 h-3.5" />
+                    {showBulkImport ? "Dölj" : "Bulk"}
+                  </button>
+                </div>
+              </div>
+
+              {/* Template picker */}
+              {showTemplates && (
+                <div className="mb-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-medium text-blue-700">
+                      Sparade mallar
+                    </span>
+                    <button
+                      onClick={() => setShowTemplates(false)}
+                      className="text-blue-400 hover:text-blue-600"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                  {templatesData?.templates && templatesData.templates.length > 0 ? (
+                    <div className="space-y-1 max-h-40 overflow-y-auto">
+                      {templatesData.templates.map((template) => (
+                        <div
+                          key={template.id}
+                          className="flex items-center justify-between p-2 bg-white rounded border hover:border-blue-300 transition-colors"
+                        >
+                          <button
+                            onClick={() => handleLoadTemplate(template)}
+                            className="flex-1 text-left"
+                          >
+                            <span className="text-sm font-medium text-gray-900">
+                              {template.name}
+                            </span>
+                            <span className="text-xs text-gray-500 ml-2">
+                              ({template.words.length} ord)
+                            </span>
+                            {template.description && (
+                              <p className="text-xs text-gray-500 truncate">
+                                {template.description}
+                              </p>
+                            )}
+                          </button>
+                          <button
+                            onClick={() => deleteTemplateMutation.mutate(template.id)}
+                            className="p-1 text-gray-400 hover:text-red-500 ml-2"
+                            title="Ta bort mall"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-blue-600 text-center py-2">
+                      Inga sparade mallar än. Lägg till ord och spara som mall.
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Save template dialog */}
+              {showSaveDialog && (
+                <div className="mb-3 p-3 bg-green-50 rounded-lg border border-green-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-medium text-green-700">
+                      Spara som mall
+                    </span>
+                    <button
+                      onClick={() => setShowSaveDialog(false)}
+                      className="text-green-400 hover:text-green-600"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Mallnamn (t.ex. Kommun X)"
+                    value={templateName}
+                    onChange={(e) => setTemplateName(e.target.value)}
+                    className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 mb-2"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Beskrivning (valfritt)"
+                    value={templateDescription}
+                    onChange={(e) => setTemplateDescription(e.target.value)}
+                    className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 mb-2"
+                  />
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={handleSaveTemplate}
+                    disabled={!templateName.trim() || saveTemplateMutation.isPending}
+                    className="w-full bg-green-100 hover:bg-green-200 text-green-700 border-green-200"
+                  >
+                    <Save className="w-4 h-4 mr-1" />
+                    {saveTemplateMutation.isPending ? "Sparar..." : `Spara ${customWords.length} ord`}
+                  </Button>
+                  {saveTemplateMutation.isError && (
+                    <p className="text-xs text-red-600 mt-1">
+                      {saveTemplateMutation.error instanceof Error
+                        ? saveTemplateMutation.error.message
+                        : "Kunde inte spara mallen"}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Bulk import section */}
+              {showBulkImport && (
+                <div className="mb-3 p-3 bg-gray-50 rounded-lg border">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-medium text-gray-600">
+                      Klistra in flera ord
+                    </span>
+                    <button
+                      onClick={() => setShowBulkImport(false)}
+                      className="text-gray-400 hover:text-gray-600"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <textarea
+                    value={bulkText}
+                    onChange={(e) => setBulkText(e.target.value)}
+                    placeholder={"Kalle:[PERSON 1]\nLisa:[PERSON 2]\nStockholm:[STAD]"}
+                    className="w-full h-24 px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 resize-none font-mono"
+                  />
+                  <p className="text-xs text-gray-500 mt-1 mb-2">
+                    Format: ord:ersättning (ett per rad, eller separera med komma/semikolon)
+                  </p>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={handleBulkImport}
+                    disabled={!bulkText.trim()}
+                    className="w-full"
+                  >
+                    <ListPlus className="w-4 h-4 mr-1" />
+                    Importera
+                  </Button>
+                </div>
+              )}
+
+              {/* Single word input */}
               <div className="flex gap-2 mb-2">
                 <input
                   type="text"

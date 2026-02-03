@@ -16,6 +16,16 @@ import type {
   TextAnonymizationRequest,
   TextAnonymizationResponse,
   AnonymizationStatus,
+  Segment,
+  SegmentUpdate,
+  SpeakerRename,
+  SpeakerRenameResponse,
+  WordTemplate,
+  WordTemplateCreate,
+  WordTemplateListResponse,
+  SearchResponse,
+  EditableTranscript,
+  WordEditResponse,
 } from "@/types";
 
 const api = axios.create({
@@ -70,8 +80,12 @@ export async function getTranscript(jobId: string): Promise<TranscriptResponse> 
   return response.data;
 }
 
-export function getExportUrl(jobId: string, format: "txt" | "md" | "json"): string {
-  return `/api/v1/jobs/${jobId}/export?format=${format}`;
+export function getExportUrl(jobId: string, format: "txt" | "md" | "json" | "srt" | "vtt", anonymized: boolean = false): string {
+  return `/api/v1/jobs/${jobId}/export?format=${format}&anonymized=${anonymized}`;
+}
+
+export function getAudioUrl(jobId: string): string {
+  return `/api/v1/jobs/${jobId}/audio`;
 }
 
 // Models
@@ -111,4 +125,89 @@ export async function anonymizeText(
 export async function getAnonymizationStatus(): Promise<AnonymizationStatus> {
   const response = await api.get<AnonymizationStatus>("/anonymize/status");
   return response.data;
+}
+
+// Segment editing
+export async function updateSegment(
+  jobId: string,
+  segmentId: number,
+  update: SegmentUpdate
+): Promise<Segment> {
+  const response = await api.patch<Segment>(
+    `/jobs/${jobId}/segments/${segmentId}`,
+    update
+  );
+  return response.data;
+}
+
+export async function renameSpeaker(
+  jobId: string,
+  rename: SpeakerRename
+): Promise<SpeakerRenameResponse> {
+  const response = await api.post<SpeakerRenameResponse>(
+    `/jobs/${jobId}/rename-speaker`,
+    rename
+  );
+  return response.data;
+}
+
+// Word templates
+export async function listTemplates(): Promise<WordTemplateListResponse> {
+  const response = await api.get<WordTemplateListResponse>("/templates");
+  return response.data;
+}
+
+export async function createTemplate(
+  data: WordTemplateCreate
+): Promise<WordTemplate> {
+  const response = await api.post<WordTemplate>("/templates", data);
+  return response.data;
+}
+
+export async function deleteTemplate(templateId: string): Promise<void> {
+  await api.delete(`/templates/${templateId}`);
+}
+
+// Search
+export async function searchTranscripts(
+  query: string,
+  limit: number = 50
+): Promise<SearchResponse> {
+  const response = await api.get<SearchResponse>("/jobs/search/global", {
+    params: { q: query, limit },
+  });
+  return response.data;
+}
+
+// Audio editor
+export async function getEditableTranscript(
+  jobId: string
+): Promise<EditableTranscript> {
+  const response = await api.get<EditableTranscript>(
+    `/editor/${jobId}/editable-transcript`
+  );
+  return response.data;
+}
+
+export async function updateWordInclusion(
+  jobId: string,
+  wordIds: number[],
+  included: boolean
+): Promise<WordEditResponse> {
+  const response = await api.post<WordEditResponse>(
+    `/editor/${jobId}/words/edit`,
+    { word_ids: wordIds, included }
+  );
+  return response.data;
+}
+
+export async function resetEdits(jobId: string): Promise<WordEditResponse> {
+  const response = await api.post<WordEditResponse>(
+    `/editor/${jobId}/reset-edits`
+  );
+  return response.data;
+}
+
+export function getEditedAudioUrl(jobId: string): string {
+  return `/api/v1/editor/${jobId}/download-edited-audio`;
 }

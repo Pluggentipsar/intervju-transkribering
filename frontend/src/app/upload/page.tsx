@@ -1,10 +1,18 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Mic, Upload, Settings, Zap } from "lucide-react";
+import { ArrowLeft, Mic, FileAudio, FolderOpen } from "lucide-react";
+import { clsx } from "clsx";
 import { UploadForm } from "@/components/upload/UploadForm";
+import { BatchUploadForm } from "@/components/upload/BatchUploadForm";
+import { RecordForm } from "@/components/upload/RecordForm";
+
+type UploadMode = "single" | "batch" | "record";
 
 export default function UploadPage() {
+  const [mode, setMode] = useState<UploadMode>("single");
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero header */}
@@ -29,25 +37,49 @@ export default function UploadPage() {
                 Ny transkription
               </h1>
               <p className="text-gray-400">
-                Ladda upp en ljudfil så transkriberar vi den med KB Whisper
+                Ladda upp ljudfiler så transkriberar vi dem med KB Whisper
               </p>
             </div>
           </div>
 
-          {/* Feature pills */}
-          <div className="flex flex-wrap gap-3 mt-8">
-            <div className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-full text-sm text-gray-300">
-              <Upload className="w-4 h-4 text-primary-400" />
-              MP3, WAV, M4A
-            </div>
-            <div className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-full text-sm text-gray-300">
-              <Settings className="w-4 h-4 text-primary-400" />
-              Anpassningsbara inställningar
-            </div>
-            <div className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-full text-sm text-gray-300">
-              <Zap className="w-4 h-4 text-primary-400" />
-              100% lokalt
-            </div>
+          {/* Mode tabs */}
+          <div className="flex gap-2 mt-8">
+            <button
+              onClick={() => setMode("single")}
+              className={clsx(
+                "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all",
+                mode === "single"
+                  ? "bg-white text-gray-900 shadow-lg"
+                  : "bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10"
+              )}
+            >
+              <FileAudio className="w-4 h-4" />
+              En fil
+            </button>
+            <button
+              onClick={() => setMode("batch")}
+              className={clsx(
+                "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all",
+                mode === "batch"
+                  ? "bg-white text-gray-900 shadow-lg"
+                  : "bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10"
+              )}
+            >
+              <FolderOpen className="w-4 h-4" />
+              Flera filer
+            </button>
+            <button
+              onClick={() => setMode("record")}
+              className={clsx(
+                "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all",
+                mode === "record"
+                  ? "bg-white text-gray-900 shadow-lg"
+                  : "bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10"
+              )}
+            >
+              <Mic className="w-4 h-4" />
+              Spela in
+            </button>
           </div>
         </div>
       </div>
@@ -55,7 +87,9 @@ export default function UploadPage() {
       {/* Form section */}
       <div className="max-w-3xl mx-auto px-4 sm:px-6 -mt-8 pb-16">
         <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-          <UploadForm />
+          {mode === "single" && <UploadForm />}
+          {mode === "batch" && <BatchUploadForm />}
+          {mode === "record" && <RecordForm />}
         </div>
       </div>
     </div>

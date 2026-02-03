@@ -4,14 +4,24 @@
 
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { clsx } from "clsx";
-import { Search, User, Shield, ShieldOff } from "lucide-react";
+import { Search, User, Shield, ShieldOff, Copy, CheckCircle, Play } from "lucide-react";
 import type { Segment } from "@/types";
 
 interface TranscriptViewerProps {
   segments: Segment[];
   className?: string;
+  /** Controlled mode: current showAnonymized state */
+  showAnonymized?: boolean;
+  /** Controlled mode: callback when showAnonymized changes */
+  onShowAnonymizedChange?: (value: boolean) => void;
+  /** Current audio playback time (for highlighting active segment) */
+  currentAudioTime?: number;
+  /** Callback when user clicks a segment to seek to that time */
+  onSegmentClick?: (time: number) => void;
+  /** Whether auto-scroll to active segment is enabled */
+  autoScroll?: boolean;
 }
 
 function formatTimestamp(seconds: number): string {
@@ -39,10 +49,28 @@ function getSpeakerColor(speaker: string, speakerList: string[]): string {
   return SPEAKER_COLORS[index % SPEAKER_COLORS.length];
 }
 
-export function TranscriptViewer({ segments, className }: TranscriptViewerProps) {
+export function TranscriptViewer({
+  segments,
+  className,
+  showAnonymized: controlledShowAnonymized,
+  onShowAnonymizedChange,
+  currentAudioTime,
+  onSegmentClick,
+  autoScroll = true,
+}: TranscriptViewerProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSpeaker, setSelectedSpeaker] = useState<string | null>(null);
-  const [showAnonymized, setShowAnonymized] = useState(true);
+  const [internalShowAnonymized, setInternalShowAnonymized] = useState(true);
+  const [copied, setCopied] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const activeSegmentRef = useRef<HTMLDivElement>(null);
+
+  // Use controlled or internal state
+  const isControlled = controlledShowAnonymized !== undefined;
+  const showAnonymized = isControlled ? controlledShowAnonymized : internalShowAnonymized;
+  const setShowAnonymized = isControlled
+    ? (value: boolean) => onShowAnonymizedChange?.(value)
+    : setInternalShowAnonymized;
 
   // Check if any segment has anonymized text
   const hasAnonymizedContent = useMemo(() => {
@@ -81,6 +109,32 @@ export function TranscriptViewer({ segments, className }: TranscriptViewerProps)
     });
   }, [segments, searchQuery, selectedSpeaker, showAnonymized]);
 
+  // Find active segment based on current audio time
+  const activeSegmentId = useMemo(() => {
+    if (currentAudioTime === undefined) return null;
+
+    // Find segment where currentAudioTime falls within start_time and end_time
+    const activeSegment = segments.find(
+      (s) => currentAudioTime >= s.start_time && currentAudioTime < s.end_time
+    );
+    return activeSegment?.id ?? null;
+  }, [segments, currentAudioTime]);
+
+  // Auto-scroll to active segment
+  useEffect(() => {
+    if (autoScroll && activeSegmentRef.current && containerRef.current) {
+      const container = containerRef.current;
+      const element = activeSegmentRef.current;
+      const containerRect = container.getBoundingClientRect();
+      const elementRect = element.getBoundingClientRect();
+
+      // Check if element is outside visible area
+      if (elementRect.top < containerRect.top || elementRect.bottom > containerRect.bottom) {
+        element.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }
+  }, [activeSegmentId, autoScroll]);
+
   // Highlight search matches
   const highlightText = (text: string) => {
     if (!searchQuery) return text;
@@ -95,6 +149,27 @@ export function TranscriptViewer({ segments, className }: TranscriptViewerProps)
         part
       )
     );
+  };
+
+  // Get full text for copying
+  const getFullText = () => {
+    return filteredSegments
+      .map((segment) => {
+        const text = showAnonymized && segment.anonymized_text
+          ? segment.anonymized_text
+          : segment.text;
+        const speaker = segment.speaker ? `[${segment.speaker}]: ` : "";
+        return `${speaker}${text}`;
+      })
+      .join("\n\n");
+  };
+
+  // Copy handler
+  const handleCopy = async () => {
+    const text = getFullText();
+    await navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
@@ -168,6 +243,29 @@ export function TranscriptViewer({ segments, className }: TranscriptViewerProps)
             )}
           </button>
         )}
+
+        {/* Copy button */}
+        <button
+          onClick={handleCopy}
+          className={clsx(
+            "flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium border transition-colors",
+            copied
+              ? "bg-green-100 text-green-800 border-green-200"
+              : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+          )}
+        >
+          {copied ? (
+            <>
+              <CheckCircle className="w-4 h-4" />
+              Kopierat!
+            </>
+          ) : (
+            <>
+              <Copy className="w-4 h-4" />
+              Kopiera text
+            </>
+          )}
+        </button>
       </div>
 
       {/* Results count */}
@@ -176,42 +274,73 @@ export function TranscriptViewer({ segments, className }: TranscriptViewerProps)
       </div>
 
       {/* Segments */}
-      <div className="space-y-2 overflow-y-auto">
-        {filteredSegments.map((segment) => (
-          <div
-            key={segment.id}
-            className="p-3 bg-white rounded-lg border hover:border-gray-300 transition-colors"
-          >
-            <div className="flex items-start gap-3">
-              {/* Timestamp */}
-              <span className="text-xs text-gray-400 font-mono whitespace-nowrap pt-0.5">
-                {formatTimestamp(segment.start_time)}
-              </span>
+      <div ref={containerRef} className="space-y-2 overflow-y-auto">
+        {filteredSegments.map((segment) => {
+          const isActive = segment.id === activeSegmentId;
+          const isClickable = !!onSegmentClick;
 
-              {/* Speaker badge */}
-              {segment.speaker && (
-                <span
-                  className={clsx(
-                    "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border",
-                    getSpeakerColor(segment.speaker, speakers)
-                  )}
-                >
-                  <User className="w-3 h-3" />
-                  {segment.speaker}
-                </span>
+          return (
+            <div
+              key={segment.id}
+              ref={isActive ? activeSegmentRef : undefined}
+              onClick={isClickable ? () => onSegmentClick(segment.start_time) : undefined}
+              className={clsx(
+                "p-3 rounded-lg border transition-all",
+                isActive
+                  ? "bg-primary-50 border-primary-300 ring-2 ring-primary-200"
+                  : "bg-white border-gray-200 hover:border-gray-300",
+                isClickable && "cursor-pointer hover:shadow-sm"
               )}
+            >
+              <div className="flex items-start gap-3">
+                {/* Timestamp with play indicator */}
+                <div className="flex items-center gap-1">
+                  {isClickable && (
+                    <Play
+                      className={clsx(
+                        "w-3 h-3 transition-opacity",
+                        isActive ? "text-primary-500 opacity-100" : "text-gray-400 opacity-0 group-hover:opacity-100"
+                      )}
+                    />
+                  )}
+                  <span
+                    className={clsx(
+                      "text-xs font-mono whitespace-nowrap pt-0.5",
+                      isActive ? "text-primary-600 font-medium" : "text-gray-400"
+                    )}
+                  >
+                    {formatTimestamp(segment.start_time)}
+                  </span>
+                </div>
 
-              {/* Text */}
-              <p className="flex-1 text-gray-800 leading-relaxed">
-                {highlightText(
-                  showAnonymized && segment.anonymized_text
-                    ? segment.anonymized_text
-                    : segment.text
+                {/* Speaker badge */}
+                {segment.speaker && (
+                  <span
+                    className={clsx(
+                      "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border",
+                      getSpeakerColor(segment.speaker, speakers)
+                    )}
+                  >
+                    <User className="w-3 h-3" />
+                    {segment.speaker}
+                  </span>
                 )}
-              </p>
+
+                {/* Text */}
+                <p className={clsx(
+                  "flex-1 leading-relaxed",
+                  isActive ? "text-gray-900" : "text-gray-800"
+                )}>
+                  {highlightText(
+                    showAnonymized && segment.anonymized_text
+                      ? segment.anonymized_text
+                      : segment.text
+                  )}
+                </p>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
 
         {filteredSegments.length === 0 && (
           <div className="text-center py-8 text-gray-500">

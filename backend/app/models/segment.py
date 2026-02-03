@@ -9,6 +9,7 @@ from app.models.base import Base
 
 if TYPE_CHECKING:
     from app.models.job import Job
+    from app.models.word import Word
 
 
 class Segment(Base):
@@ -32,3 +33,6 @@ class Segment(Base):
 
     # Relationships
     job: Mapped["Job"] = relationship("Job", back_populates="segments")
+    words: Mapped[list["Word"]] = relationship(
+        "Word", back_populates="segment", cascade="all, delete-orphan"
+    )

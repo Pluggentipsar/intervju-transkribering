@@ -47,7 +47,8 @@
       "Bash(mypy:*)",
       "Bash(c:/Koden/intervju-transkribering/backend/venv/Scripts/python.exe:*)",
       "Bash(npm run build:*)",
-      "Bash(Remove-Item \"c:\\\\Koden\\\\intervju-transkribering\\\\backend\\\\transcription.db\" -Force)"
+      "Bash(Remove-Item \"c:\\\\Koden\\\\intervju-transkribering\\\\backend\\\\transcription.db\" -Force)",
+      "Bash(npm install:*)"
     ]
   }
 }

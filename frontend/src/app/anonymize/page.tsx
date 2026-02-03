@@ -19,8 +19,11 @@ import {
   Sparkles,
   Lock,
   FileText,
+  ListPlus,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { IndeterminateProgress } from "@/components/ui/ProgressBar";
 import { anonymizeText, getAnonymizationStatus } from "@/services/api";
 import type { TextAnonymizationRequest, NerEntityTypesConfig } from "@/types";
 
@@ -46,6 +49,8 @@ export default function AnonymizePage() {
   const [customWords, setCustomWords] = useState<CustomWordEntry[]>([]);
   const [newWord, setNewWord] = useState("");
   const [newReplacement, setNewReplacement] = useState("");
+  const [showBulkImport, setShowBulkImport] = useState(false);
+  const [bulkText, setBulkText] = useState("");
   const [copied, setCopied] = useState(false);
 
   // Check if NER is available
@@ -71,6 +76,36 @@ export default function AnonymizePage() {
 
   const handleRemoveWord = (index: number) => {
     setCustomWords(customWords.filter((_, i) => i !== index));
+  };
+
+  const handleBulkImport = () => {
+    if (!bulkText.trim()) return;
+
+    // Parse bulk text: supports "word:replacement" or "word→replacement"
+    // Separators: newline, comma, or semicolon
+    const entries = bulkText
+      .split(/[\n,;]+/)
+      .map((entry) => entry.trim())
+      .filter((entry) => entry.length > 0);
+
+    const newItems: CustomWordEntry[] = [];
+    for (const entry of entries) {
+      // Try different separators: ":", "→", " -> ", " - "
+      const match = entry.match(/^(.+?)(?::|→|->| - )(.+)$/);
+      if (match) {
+        const word = match[1].trim();
+        const replacement = match[2].trim();
+        if (word && replacement) {
+          newItems.push({ word, replacement });
+        }
+      }
+    }
+
+    if (newItems.length > 0) {
+      setCustomWords([...customWords, ...newItems]);
+      setBulkText("");
+      setShowBulkImport(false);
+    }
   };
 
   const handleAnonymize = () => {
@@ -279,7 +314,54 @@ export default function AnonymizePage() {
 
                 {/* Custom words */}
                 <div className="mt-6 pt-6 border-t">
-                  <p className="font-medium text-gray-900 mb-3">Egna ord att ersätta</p>
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="font-medium text-gray-900">Egna ord att ersätta</p>
+                    <button
+                      onClick={() => setShowBulkImport(!showBulkImport)}
+                      className="text-xs text-amber-600 hover:text-amber-700 flex items-center gap-1"
+                    >
+                      <ListPlus className="w-3.5 h-3.5" />
+                      {showBulkImport ? "Dölj bulk-import" : "Lägg till flera"}
+                    </button>
+                  </div>
+
+                  {/* Bulk import section */}
+                  {showBulkImport && (
+                    <div className="mb-3 p-3 bg-amber-50 rounded-lg border border-amber-200">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-medium text-amber-700">
+                          Klistra in flera ord
+                        </span>
+                        <button
+                          onClick={() => setShowBulkImport(false)}
+                          className="text-amber-400 hover:text-amber-600"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <textarea
+                        value={bulkText}
+                        onChange={(e) => setBulkText(e.target.value)}
+                        placeholder={"Kalle:[PERSON 1]\nLisa:[PERSON 2]\nStockholm:[STAD]"}
+                        className="w-full h-24 px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 resize-none font-mono bg-white"
+                      />
+                      <p className="text-xs text-amber-600 mt-1 mb-2">
+                        Format: ord:ersättning (ett per rad, eller separera med komma/semikolon)
+                      </p>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={handleBulkImport}
+                        disabled={!bulkText.trim()}
+                        className="w-full"
+                      >
+                        <ListPlus className="w-4 h-4 mr-1" />
+                        Importera
+                      </Button>
+                    </div>
+                  )}
+
+                  {/* Single word input */}
                   <div className="flex gap-2 mb-3">
                     <input
                       type="text"
@@ -389,7 +471,20 @@ export default function AnonymizePage() {
                     mutation.data ? "bg-white border-green-200" : "bg-gray-50 border-gray-200"
                   )}
                 >
-                  {mutation.data?.anonymized_text || (
+                  {mutation.isPending ? (
+                    <div className="flex flex-col items-center justify-center h-full gap-4">
+                      <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center">
+                        <Shield className="w-6 h-6 text-amber-600 animate-pulse" />
+                      </div>
+                      <div className="text-center">
+                        <p className="text-gray-700 font-medium mb-2">Avidentifierar...</p>
+                        <p className="text-sm text-gray-500 mb-4">Analyserar text med AI</p>
+                        <IndeterminateProgress className="w-48 mx-auto" />
+                      </div>
+                    </div>
+                  ) : mutation.data?.anonymized_text ? (
+                    mutation.data.anonymized_text
+                  ) : (
                     <span className="text-gray-400 italic">
                       Resultatet visas här efter avidentifiering...
                     </span>
