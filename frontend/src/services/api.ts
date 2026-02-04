@@ -74,6 +74,11 @@ export async function deleteJob(jobId: string): Promise<void> {
   await api.delete(`/jobs/${jobId}`);
 }
 
+export async function cancelJob(jobId: string): Promise<{ status: string; job_id: string }> {
+  const response = await api.post<{ status: string; job_id: string }>(`/jobs/${jobId}/cancel`);
+  return response.data;
+}
+
 // Transcripts
 export async function getTranscript(jobId: string): Promise<TranscriptResponse> {
   const response = await api.get<TranscriptResponse>(`/jobs/${jobId}/transcript`);

@@ -8,10 +8,14 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from app.config import settings
 from app.db.database import get_db
 from app.models.job import Job, JobStatus
 
 router = APIRouter()
+
+# Get absolute path to backend directory
+BACKEND_DIR = Path(__file__).resolve().parent.parent.parent.parent
 
 # MIME types for audio files
 AUDIO_MIME_TYPES = {
@@ -107,8 +111,10 @@ async def get_audio(
             detail="Jobbet hittades inte",
         )
 
-    # Get the audio file path
+    # Get the audio file path (handle both relative and absolute paths)
     file_path = Path(job.file_path)
+    if not file_path.is_absolute():
+        file_path = BACKEND_DIR / file_path
     if not file_path.exists():
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

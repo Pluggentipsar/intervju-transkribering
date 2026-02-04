@@ -217,6 +217,37 @@ async def delete_job(
     return {"status": "deleted", "job_id": job_id}
 
 
+@router.post("/{job_id}/cancel")
+async def cancel_job(
+    job_id: str,
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> dict[str, str]:
+    """Cancel a pending or processing job."""
+    query = select(Job).where(Job.id == job_id)
+    result = await db.execute(query)
+    job = result.scalar_one_or_none()
+
+    if not job:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Jobbet hittades inte",
+        )
+
+    if job.status not in (DBJobStatus.PENDING, DBJobStatus.PROCESSING):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Kan inte avbryta jobb med status: {job.status.value}",
+        )
+
+    # Mark as cancelled
+    job.status = DBJobStatus.CANCELLED
+    job.current_step = "cancelled"
+    job.error_message = "Avbrutet av användaren"
+    await db.commit()
+
+    return {"status": "cancelled", "job_id": job_id}
+
+
 @router.post("/{job_id}/enhance-anonymization", response_model=EnhancedAnonymizationResponse)
 async def enhance_anonymization(
     job_id: str,

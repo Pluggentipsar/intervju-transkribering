@@ -14,6 +14,9 @@ from sqlalchemy.orm import selectinload
 from app.db.database import get_db
 from app.models.job import Job
 from app.models.job import JobStatus as DBJobStatus
+
+# Get absolute path to backend directory
+BACKEND_DIR = Path(__file__).resolve().parent.parent.parent.parent
 from app.models.segment import Segment
 from app.models.word import Word
 from app.schemas.segment import (
@@ -165,6 +168,8 @@ async def download_edited_audio(
         )
 
     audio_path = Path(job.file_path)
+    if not audio_path.is_absolute():
+        audio_path = BACKEND_DIR / audio_path
     if not audio_path.exists():
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -273,6 +278,8 @@ async def generate_edited_audio(
         )
 
     audio_path = Path(job.file_path)
+    if not audio_path.is_absolute():
+        audio_path = BACKEND_DIR / audio_path
     if not audio_path.exists():
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

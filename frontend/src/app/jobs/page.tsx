@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
 import { sv } from "date-fns/locale";
 import {
@@ -14,9 +14,10 @@ import {
   Users,
   FileText,
   Shield,
+  StopCircle,
 } from "lucide-react";
 import Link from "next/link";
-import { listJobs } from "@/services/api";
+import { listJobs, cancelJob } from "@/services/api";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { Button } from "@/components/ui/Button";
 import { GlobalSearch } from "@/components/search/GlobalSearch";
@@ -73,9 +74,18 @@ function formatFileSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function JobCard({ job }: { job: Job }) {
+function JobCard({ job, onCancel }: { job: Job; onCancel?: (jobId: string) => void }) {
   const config = STATUS_CONFIG[job.status];
   const StatusIcon = config.icon;
+  const isActive = job.status === "pending" || job.status === "processing";
+
+  const handleCancel = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (onCancel) {
+      onCancel(job.id);
+    }
+  };
 
   return (
     <Link
@@ -95,13 +105,25 @@ function JobCard({ job }: { job: Job }) {
               <h3 className="font-semibold text-gray-900 truncate group-hover:text-primary-600 transition-colors">
                 {job.file_name}
               </h3>
-              <div
-                className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium ${config.color} ${config.bgColor}`}
-              >
-                <StatusIcon
-                  className={`w-4 h-4 ${job.status === "processing" ? "animate-spin" : ""}`}
-                />
-                <span>{config.label}</span>
+              <div className="flex items-center gap-2">
+                {isActive && onCancel && (
+                  <button
+                    onClick={handleCancel}
+                    className="flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium text-red-600 bg-red-100 hover:bg-red-200 transition-colors"
+                    title="Avbryt transkribering"
+                  >
+                    <StopCircle className="w-4 h-4" />
+                    <span>Avbryt</span>
+                  </button>
+                )}
+                <div
+                  className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium ${config.color} ${config.bgColor}`}
+                >
+                  <StatusIcon
+                    className={`w-4 h-4 ${job.status === "processing" ? "animate-spin" : ""}`}
+                  />
+                  <span>{config.label}</span>
+                </div>
               </div>
             </div>
 
@@ -161,14 +183,29 @@ function JobCard({ job }: { job: Job }) {
 }
 
 export default function JobsPage() {
+  const queryClient = useQueryClient();
+
   const { data, isLoading, error } = useQuery({
     queryKey: ["jobs"],
     queryFn: () => listJobs(0, 50),
     refetchInterval: 5000,
   });
 
+  const cancelMutation = useMutation({
+    mutationFn: cancelJob,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["jobs"] });
+    },
+  });
+
+  const handleCancel = (jobId: string) => {
+    if (confirm("Är du säker på att du vill avbryta denna transkribering?")) {
+      cancelMutation.mutate(jobId);
+    }
+  };
+
   const jobs = data?.jobs || [];
-  const processingJobs = jobs.filter((j) => j.status === "processing");
+  const processingJobs = jobs.filter((j) => j.status === "processing" || j.status === "pending");
   const completedJobs = jobs.filter((j) => j.status === "completed");
   const failedJobs = jobs.filter((j) => j.status === "failed");
 
@@ -292,7 +329,7 @@ export default function JobsPage() {
         ) : (
           <div className="space-y-4">
             {jobs.map((job) => (
-              <JobCard key={job.id} job={job} />
+              <JobCard key={job.id} job={job} onCancel={handleCancel} />
             ))}
           </div>
         )}

@@ -28,17 +28,17 @@ const STEP_LABELS: Record<string, string> = {
   creating_job: "Skapar transkriptionsjobb...",
   queued: "Väntar i kö...",
   starting: "Startar...",
-  loading_model: "Laddar AI-modell...",
-  transcribing: "Transkriberar...",
+  loading_model: "Laddar AI-modell (kan ta några minuter första gången)...",
+  transcribing: "Transkriberar lokalt på din dator...",
   transcription_complete: "Transkribering klar, förbereder talaridentifiering...",
-  loading_diarization_model: "Laddar talaridentifieringsmodell...",
+  loading_diarization_model: "Laddar talaridentifieringsmodell (kan ta några minuter första gången)...",
   loading_audio_for_diarization: "Laddar ljud för talaridentifiering...",
-  diarizing: "Identifierar talare...",
+  diarizing: "Identifierar talare lokalt...",
   assigning_speakers: "Tilldelar talare till segment...",
   diarization_complete: "Talaridentifiering klar...",
   diarization_failed: "Talaridentifiering misslyckades, fortsätter...",
-  loading_anonymization_model: "Laddar avidentifieringsmodell...",
-  anonymizing: "Avidentifierar känslig information...",
+  loading_anonymization_model: "Laddar avidentifieringsmodell (kan ta några minuter första gången)...",
+  anonymizing: "Avidentifierar känslig information lokalt...",
   anonymization_complete: "Avidentifiering klar...",
   saving_results: "Sparar resultat...",
   completed: "Klart!",
@@ -115,6 +115,28 @@ export function RecordForm() {
 
   return (
     <form onSubmit={handleSubmit} className="divide-y divide-gray-100">
+      {/* Privacy & Info Banner */}
+      <div className="p-6 bg-gradient-to-r from-green-50 to-emerald-50 border-b border-green-100">
+        <div className="flex gap-4">
+          <div className="flex-shrink-0">
+            <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+              <svg className="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+            </div>
+          </div>
+          <div className="flex-1">
+            <h3 className="font-semibold text-green-900 mb-1">
+              100% lokal bearbetning
+            </h3>
+            <p className="text-sm text-green-800">
+              Din inspelning bearbetas lokalt på din dator. Innehållet lämnar aldrig din enhet.
+              Första körningen laddar ned AI-modellerna (en gång).
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Recording */}
       <div className="p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-1">

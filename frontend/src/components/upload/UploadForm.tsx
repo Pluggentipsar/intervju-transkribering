@@ -28,17 +28,17 @@ const STEP_LABELS: Record<string, string> = {
   creating_job: "Skapar transkriptionsjobb...",
   queued: "Väntar i kö...",
   starting: "Startar...",
-  loading_model: "Laddar AI-modell...",
-  transcribing: "Transkriberar...",
+  loading_model: "Laddar AI-modell (kan ta några minuter första gången)...",
+  transcribing: "Transkriberar lokalt på din dator...",
   transcription_complete: "Transkribering klar, förbereder talaridentifiering...",
-  loading_diarization_model: "Laddar talaridentifieringsmodell...",
+  loading_diarization_model: "Laddar talaridentifieringsmodell (kan ta några minuter första gången)...",
   loading_audio_for_diarization: "Laddar ljud för talaridentifiering...",
-  diarizing: "Identifierar talare...",
+  diarizing: "Identifierar talare lokalt...",
   assigning_speakers: "Tilldelar talare till segment...",
   diarization_complete: "Talaridentifiering klar...",
   diarization_failed: "Talaridentifiering misslyckades, fortsätter...",
-  loading_anonymization_model: "Laddar avidentifieringsmodell...",
-  anonymizing: "Avidentifierar känslig information...",
+  loading_anonymization_model: "Laddar avidentifieringsmodell (kan ta några minuter första gången)...",
+  anonymizing: "Avidentifierar känslig information lokalt...",
   anonymization_complete: "Avidentifiering klar...",
   saving_results: "Sparar resultat...",
   completed: "Klart!",
@@ -115,6 +115,46 @@ export function UploadForm() {
 
   return (
     <form onSubmit={handleSubmit} className="divide-y divide-gray-100">
+      {/* Privacy & Info Banner */}
+      <div className="p-6 bg-gradient-to-r from-green-50 to-emerald-50 border-b border-green-100">
+        <div className="flex gap-4">
+          <div className="flex-shrink-0">
+            <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+              <svg className="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+            </div>
+          </div>
+          <div className="flex-1">
+            <h3 className="font-semibold text-green-900 mb-1">
+              100% lokal bearbetning
+            </h3>
+            <p className="text-sm text-green-800 mb-2">
+              All transkribering, talaridentifiering och avidentifiering sker direkt på din dator.
+              Ditt ljudinnehåll lämnar aldrig din enhet.
+            </p>
+            <details className="group">
+              <summary className="text-sm text-green-700 cursor-pointer hover:text-green-900 font-medium">
+                Första gången? Läs mer om vad som händer...
+              </summary>
+              <div className="mt-2 text-sm text-green-700 space-y-1 pl-0">
+                <p>
+                  <strong>Första körningen:</strong> AI-modellerna laddas ned till din dator (ca 500 MB - 3 GB beroende på modell).
+                  Detta sker endast en gång.
+                </p>
+                <p>
+                  <strong>Efterföljande körningar:</strong> Modellerna finns redan lokalt och transkriberingen startar direkt.
+                </p>
+                <p>
+                  <strong>Vad används:</strong> KB Whisper för transkribering, WhisperX för talaridentifiering,
+                  och KB-BERT för avidentifiering av känslig information.
+                </p>
+              </div>
+            </details>
+          </div>
+        </div>
+      </div>
+
       {/* File Upload */}
       <div className="p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-1">

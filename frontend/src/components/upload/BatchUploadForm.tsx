@@ -203,6 +203,28 @@ export function BatchUploadForm() {
 
   return (
     <div className="divide-y divide-gray-100">
+      {/* Privacy & Info Banner */}
+      <div className="p-6 bg-gradient-to-r from-green-50 to-emerald-50 border-b border-green-100">
+        <div className="flex gap-4">
+          <div className="flex-shrink-0">
+            <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+              <svg className="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+            </div>
+          </div>
+          <div className="flex-1">
+            <h3 className="font-semibold text-green-900 mb-1">
+              100% lokal bearbetning
+            </h3>
+            <p className="text-sm text-green-800">
+              Alla filer bearbetas lokalt på din dator. Innehållet lämnar aldrig din enhet.
+              Första körningen laddar ned AI-modellerna (en gång).
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Dropzone */}
       <div className="p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-1">

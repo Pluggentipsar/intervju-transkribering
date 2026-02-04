@@ -19,9 +19,10 @@ import {
   FileDown,
   Scissors,
   Shield,
+  StopCircle,
 } from "lucide-react";
 import Link from "next/link";
-import { getJob, getTranscript, getExportUrl, getAudioUrl, runAnonymization } from "@/services/api";
+import { getJob, getTranscript, getExportUrl, getAudioUrl, runAnonymization, cancelJob } from "@/services/api";
 import { Button } from "@/components/ui/Button";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { TranscriptViewer } from "@/components/transcription/TranscriptViewer";
@@ -50,6 +51,7 @@ const STEP_LABELS: Record<string, string> = {
   saving_results: "Sparar resultat...",
   completed: "Klart!",
   failed: "Misslyckades",
+  cancelled: "Avbruten",
 };
 
 function formatDuration(seconds: number | null): string {
@@ -88,6 +90,20 @@ export default function JobDetailPage() {
       queryClient.invalidateQueries({ queryKey: ["job", jobId] });
     },
   });
+
+  // Mutation for cancelling job
+  const cancelMutation = useMutation({
+    mutationFn: () => cancelJob(jobId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["job", jobId] });
+    },
+  });
+
+  const handleCancel = () => {
+    if (confirm("Är du säker på att du vill avbryta denna transkribering?")) {
+      cancelMutation.mutate();
+    }
+  };
 
   // Check if transcript has anonymized content
   const hasAnonymizedContent = useMemo(() => {
@@ -167,6 +183,7 @@ export default function JobDetailPage() {
   const isProcessing = job.status === "pending" || job.status === "processing";
   const isComplete = job.status === "completed";
   const isFailed = job.status === "failed";
+  const isCancelled = job.status === "cancelled";
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-24 pb-16">
@@ -252,25 +269,45 @@ export default function JobDetailPage() {
         )}
       </div>
 
-      {/* Status card for processing/failed */}
-      {(isProcessing || isFailed) && (
+      {/* Status card for processing/failed/cancelled */}
+      {(isProcessing || isFailed || isCancelled) && (
         <div className="bg-white rounded-xl border p-6 mb-6">
-          <div className="flex items-center gap-3 mb-4">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              {isProcessing && (
+                <>
+                  <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
+                  <span className="font-medium text-gray-900">
+                    Transkriberar...
+                  </span>
+                </>
+              )}
+              {isFailed && (
+                <>
+                  <XCircle className="w-6 h-6 text-red-500" />
+                  <span className="font-medium text-red-700">
+                    Transkriberingen misslyckades
+                  </span>
+                </>
+              )}
+              {isCancelled && (
+                <>
+                  <StopCircle className="w-6 h-6 text-gray-500" />
+                  <span className="font-medium text-gray-700">
+                    Transkriberingen avbröts
+                  </span>
+                </>
+              )}
+            </div>
             {isProcessing && (
-              <>
-                <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
-                <span className="font-medium text-gray-900">
-                  Transkriberar...
-                </span>
-              </>
-            )}
-            {isFailed && (
-              <>
-                <XCircle className="w-6 h-6 text-red-500" />
-                <span className="font-medium text-red-700">
-                  Transkriberingen misslyckades
-                </span>
-              </>
+              <button
+                onClick={handleCancel}
+                disabled={cancelMutation.isPending}
+                className="flex items-center gap-2 px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors font-medium disabled:opacity-50"
+              >
+                <StopCircle className="w-4 h-4" />
+                {cancelMutation.isPending ? "Avbryter..." : "Avbryt"}
+              </button>
             )}
           </div>
 
@@ -285,6 +322,10 @@ export default function JobDetailPage() {
 
           {isFailed && job.error_message && (
             <p className="text-sm text-red-600 mt-2">{job.error_message}</p>
+          )}
+
+          {isCancelled && (
+            <p className="text-sm text-gray-600 mt-2">Transkriberingen avbröts av användaren.</p>
           )}
         </div>
       )}
