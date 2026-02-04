@@ -1,0 +1,45 @@
+# TystText - Lokal Transkribering
+#
+# Starta med: docker compose up
+# Öppna sedan: http://localhost:3000
+#
+# All bearbetning sker lokalt - inget skickas till molnet.
+
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    volumes:
+      # Persistent storage for uploads and database
+      - tysttext-uploads:/app/uploads
+      - tysttext-data:/app/data
+      # Mount HuggingFace cache for ML models (persist between restarts)
+      - tysttext-models:/root/.cache/huggingface
+    environment:
+      - PYTHONUNBUFFERED=1
+      # Optional: HuggingFace token for speaker diarization
+      # - HF_TOKEN=your_token_here
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    environment:
+      - NEXT_PUBLIC_API_URL=http://backend:8000
+
+volumes:
+  tysttext-uploads:
+    name: tysttext-uploads
+  tysttext-data:
+    name: tysttext-data
+  tysttext-models:
+    name: tysttext-models
