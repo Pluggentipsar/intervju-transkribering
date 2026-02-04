@@ -63,3 +63,10 @@ logs/
 # Cache
 .cache/
 nul
+
+# Desktop app distribution (large files)
+TystText-Distribution/
+TystText-Windows.zip
+build-exe/dist/
+build-exe/build/
+*.exe
