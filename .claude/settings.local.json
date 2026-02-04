@@ -50,7 +50,10 @@
       "Bash(Remove-Item \"c:\\\\Koden\\\\intervju-transkribering\\\\backend\\\\transcription.db\" -Force)",
       "Bash(npm install:*)",
       "Bash(git merge:*)",
-      "Bash(rustc:*)"
+      "Bash(rustc:*)",
+      "Bash(pip install:*)",
+      "Bash(node scripts/build-backend.js:*)",
+      "Bash(findstr:*)"
     ]
   }
 }
