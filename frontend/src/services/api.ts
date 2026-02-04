@@ -151,6 +151,23 @@ export async function renameSpeaker(
   return response.data;
 }
 
+// Run anonymization on existing transcript
+export interface RunAnonymizationResponse {
+  job_id: string;
+  segments_processed: number;
+  segments_anonymized: number;
+  had_existing_anonymization: boolean;
+}
+
+export async function runAnonymization(
+  jobId: string
+): Promise<RunAnonymizationResponse> {
+  const response = await api.post<RunAnonymizationResponse>(
+    `/jobs/${jobId}/run-anonymization`
+  );
+  return response.data;
+}
+
 // Word templates
 export async function listTemplates(): Promise<WordTemplateListResponse> {
   const response = await api.get<WordTemplateListResponse>("/templates");

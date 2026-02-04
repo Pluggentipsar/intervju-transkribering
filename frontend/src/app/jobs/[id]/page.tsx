@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
 import { sv } from "date-fns/locale";
@@ -18,9 +18,10 @@ import {
   Subtitles,
   FileDown,
   Scissors,
+  Shield,
 } from "lucide-react";
 import Link from "next/link";
-import { getJob, getTranscript, getExportUrl, getAudioUrl } from "@/services/api";
+import { getJob, getTranscript, getExportUrl, getAudioUrl, runAnonymization } from "@/services/api";
 import { Button } from "@/components/ui/Button";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { TranscriptViewer } from "@/components/transcription/TranscriptViewer";
@@ -65,6 +66,7 @@ function formatDuration(seconds: number | null): string {
 export default function JobDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const jobId = params.id as string;
 
   // Poll job status when processing
@@ -75,6 +77,16 @@ export default function JobDetailPage() {
     queryKey: ["transcript", jobId],
     queryFn: () => getTranscript(jobId),
     enabled: job?.status === "completed",
+  });
+
+  // Mutation for running anonymization
+  const anonymizationMutation = useMutation({
+    mutationFn: () => runAnonymization(jobId),
+    onSuccess: () => {
+      // Refetch transcript to get anonymized text
+      queryClient.invalidateQueries({ queryKey: ["transcript", jobId] });
+      queryClient.invalidateQueries({ queryKey: ["job", jobId] });
+    },
   });
 
   // Check if transcript has anonymized content
@@ -344,6 +356,55 @@ export default function JobDetailPage() {
           className="mb-6"
           onTopicClick={handleSegmentClick}
         />
+      )}
+
+      {/* Run anonymization panel - show when no anonymization exists */}
+      {isComplete && transcript && !hasAnonymizedContent && (
+        <div className="bg-white rounded-xl border p-6 mb-6">
+          <div className="flex items-start gap-4">
+            <div className="p-3 bg-blue-100 rounded-lg">
+              <Shield className="w-6 h-6 text-blue-600" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-medium text-gray-900">
+                Kör avidentifiering
+              </h3>
+              <p className="text-sm text-gray-600 mt-1">
+                Transkriptet har inte avidentifierats. Du kan köra NER-baserad avidentifiering
+                för att automatiskt ersätta personnamn, platser och organisationer med taggar.
+              </p>
+              <div className="mt-4">
+                <button
+                  onClick={() => anonymizationMutation.mutate()}
+                  disabled={anonymizationMutation.isPending}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50"
+                >
+                  {anonymizationMutation.isPending ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Kör avidentifiering...
+                    </>
+                  ) : (
+                    <>
+                      <Shield className="w-4 h-4" />
+                      Kör avidentifiering
+                    </>
+                  )}
+                </button>
+                {anonymizationMutation.isSuccess && (
+                  <span className="ml-3 text-sm text-green-600">
+                    Avidentifiering klar! {anonymizationMutation.data?.segments_anonymized} segment uppdaterade.
+                  </span>
+                )}
+                {anonymizationMutation.isError && (
+                  <span className="ml-3 text-sm text-red-600">
+                    Fel vid avidentifiering. Försök igen.
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Enhanced anonymization panel */}

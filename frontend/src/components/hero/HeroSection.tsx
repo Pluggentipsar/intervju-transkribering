@@ -42,7 +42,7 @@ export function HeroSection() {
             </span>
             <br />
             <span className="text-gradient bg-gradient-to-r from-primary-300 via-primary-400 to-primary-500 bg-clip-text text-transparent">
-              Skydda.
+              Redigera.
             </span>
           </h1>
 
@@ -55,7 +55,7 @@ export function HeroSection() {
           <p className="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto mb-10 animate-fade-in" style={{ animationDelay: "0.3s" }}>
             TystText omvandlar dina ljudfiler till text med KB Whisper,
             identifierar talare automatiskt och anonymiserar känslig information
-            — allt lokalt på din egen server.
+            — allt lokalt på din egen dator.
           </p>
 
           {/* Feature pills */}

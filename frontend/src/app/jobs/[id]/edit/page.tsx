@@ -15,6 +15,7 @@ import {
   AlertCircle,
   Check,
   Volume2,
+  Zap,
 } from "lucide-react";
 import { clsx } from "clsx";
 import {
@@ -25,6 +26,7 @@ import {
   getAudioUrl,
 } from "@/services/api";
 import { Button } from "@/components/ui/Button";
+import { AudioWaveform } from "@/components/editor/AudioWaveform";
 import type { EditorWord, EditorSegment } from "@/types";
 
 function formatTime(seconds: number): string {
@@ -156,12 +158,16 @@ export default function AudioEditorPage() {
   const [selectedWordIds, setSelectedWordIds] = useState<Set<number>>(new Set());
   const [isDragging, setIsDragging] = useState(false);
   const [dragStartId, setDragStartId] = useState<number | null>(null);
+  const [hasDragged, setHasDragged] = useState(false); // Track if we actually moved during drag
 
   // Audio state
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [showWaveform, setShowWaveform] = useState(false);
+  const [detectedSilences, setDetectedSilences] = useState<Array<{ start: number; end: number; duration: number }>>([]);
+  const [waveformSelectedRegion, setWaveformSelectedRegion] = useState<{ start: number; end: number } | null>(null);
 
   // Fetch editable transcript
   const { data: transcript, isLoading, error } = useQuery({
@@ -192,13 +198,19 @@ export default function AudioEditorPage() {
     },
   });
 
-  // Calculate stats
-  const stats = useMemo(() => {
-    if (!transcript) return { totalWords: 0, excludedWords: 0, estimatedDuration: 0 };
+  // Calculate stats and excluded ranges
+  const { stats, excludedRanges } = useMemo(() => {
+    if (!transcript) {
+      return {
+        stats: { totalWords: 0, excludedWords: 0, estimatedDuration: 0 },
+        excludedRanges: [] as Array<{ start: number; end: number }>,
+      };
+    }
 
     let totalWords = 0;
     let excludedWords = 0;
     let excludedDuration = 0;
+    const ranges: Array<{ start: number; end: number }> = [];
 
     for (const segment of transcript.segments) {
       for (const word of segment.words) {
@@ -206,20 +218,43 @@ export default function AudioEditorPage() {
         if (!word.included) {
           excludedWords++;
           excludedDuration += word.end_time - word.start_time;
+          ranges.push({ start: word.start_time, end: word.end_time });
         }
       }
     }
 
     return {
-      totalWords,
-      excludedWords,
-      estimatedDuration: transcript.duration - excludedDuration,
+      stats: {
+        totalWords,
+        excludedWords,
+        estimatedDuration: transcript.duration - excludedDuration,
+      },
+      excludedRanges: ranges,
     };
   }, [transcript]);
 
-  // Handle word click (toggle selection)
+  // Get word by ID helper
+  const getWordById = useCallback((wordId: number): EditorWord | undefined => {
+    if (!transcript) return undefined;
+    for (const seg of transcript.segments) {
+      for (const word of seg.words) {
+        if (word.id === wordId) return word;
+      }
+    }
+    return undefined;
+  }, [transcript]);
+
+  // Seek audio to a specific time
+  const seekToTime = useCallback((time: number) => {
+    if (audioRef.current) {
+      audioRef.current.currentTime = time;
+      setCurrentTime(time);
+    }
+  }, []);
+
+  // Handle word click (toggle selection) - only called if not dragged
   const handleWordClick = useCallback((wordId: number) => {
-    if (isDragging) return;
+    // This is now called from mouseup, not onClick
     setSelectedWordIds((prev) => {
       const next = new Set(prev);
       if (next.has(wordId)) {
@@ -229,12 +264,19 @@ export default function AudioEditorPage() {
       }
       return next;
     });
-  }, [isDragging]);
 
-  // Handle mouse down (start drag selection)
+    // Seek audio to the clicked word
+    const word = getWordById(wordId);
+    if (word) {
+      seekToTime(word.start_time);
+    }
+  }, [getWordById, seekToTime]);
+
+  // Handle mouse down (start potential drag)
   const handleWordMouseDown = useCallback((wordId: number) => {
     setIsDragging(true);
     setDragStartId(wordId);
+    setHasDragged(false);
     setSelectedWordIds(new Set([wordId]));
   }, []);
 
@@ -242,6 +284,11 @@ export default function AudioEditorPage() {
   const handleWordMouseEnter = useCallback(
     (wordId: number) => {
       if (!isDragging || dragStartId === null || !transcript) return;
+
+      // If we entered a different word, we're dragging
+      if (wordId !== dragStartId) {
+        setHasDragged(true);
+      }
 
       // Find all words between dragStartId and current wordId
       const allWords: EditorWord[] = [];
@@ -266,20 +313,35 @@ export default function AudioEditorPage() {
       }
 
       setSelectedWordIds(selectedIds);
+
+      // Seek to the start of the selection
+      if (allWords[from]) {
+        seekToTime(allWords[from].start_time);
+      }
     },
-    [isDragging, dragStartId, transcript]
+    [isDragging, dragStartId, transcript, seekToTime]
   );
 
-  // Handle mouse up (end drag)
+  // Handle mouse up (end drag or handle click)
   useEffect(() => {
     const handleMouseUp = () => {
+      // If we didn't drag (just clicked), toggle the single word
+      if (isDragging && !hasDragged && dragStartId !== null) {
+        // Single click - word is already selected from mouseDown,
+        // seek to it
+        const word = getWordById(dragStartId);
+        if (word) {
+          seekToTime(word.start_time);
+        }
+      }
       setIsDragging(false);
       setDragStartId(null);
+      setHasDragged(false);
     };
 
     window.addEventListener("mouseup", handleMouseUp);
     return () => window.removeEventListener("mouseup", handleMouseUp);
-  }, []);
+  }, [isDragging, hasDragged, dragStartId, getWordById, seekToTime]);
 
   // Exclude selected words
   const handleExcludeSelected = useCallback(() => {
@@ -298,6 +360,39 @@ export default function AudioEditorPage() {
       included: true,
     });
   }, [selectedWordIds, updateMutation]);
+
+  // Handle waveform region selection - find and select words within the time range
+  const handleWaveformRegionSelect = useCallback(
+    (start: number, end: number) => {
+      if (!transcript) return;
+
+      setWaveformSelectedRegion({ start, end });
+
+      // Find all words within this time range
+      const wordsInRange: number[] = [];
+      for (const segment of transcript.segments) {
+        for (const word of segment.words) {
+          // Word overlaps with selection if it starts before end and ends after start
+          if (word.start_time < end && word.end_time > start) {
+            wordsInRange.push(word.id);
+          }
+        }
+      }
+
+      if (wordsInRange.length > 0) {
+        setSelectedWordIds(new Set(wordsInRange));
+        // Seek to start of selection
+        seekToTime(start);
+      }
+    },
+    [transcript, seekToTime]
+  );
+
+  // Clear waveform selection
+  const clearWaveformSelection = useCallback(() => {
+    setWaveformSelectedRegion(null);
+    setSelectedWordIds(new Set());
+  }, []);
 
   // Audio controls
   const togglePlay = useCallback(() => {
@@ -487,7 +582,107 @@ export default function AudioEditorPage() {
             </div>
 
             <Volume2 className="w-5 h-5 text-gray-400" />
+
+            <button
+              onClick={() => setShowWaveform(!showWaveform)}
+              className={clsx(
+                "p-2 rounded-lg transition-colors",
+                showWaveform
+                  ? "bg-primary-100 text-primary-600"
+                  : "hover:bg-gray-100 text-gray-500"
+              )}
+              title="Visa ljudvåg"
+            >
+              <Zap className="w-5 h-5" />
+            </button>
           </div>
+
+          {/* Waveform visualization */}
+          {showWaveform && duration > 0 && (
+            <div className="mt-4">
+              <AudioWaveform
+                audioUrl={getAudioUrl(jobId)}
+                currentTime={currentTime}
+                duration={duration}
+                onSeek={seekToTime}
+                onSilencesDetected={setDetectedSilences}
+                onRegionSelect={handleWaveformRegionSelect}
+                excludedRanges={excludedRanges}
+                selectedRegion={waveformSelectedRegion}
+              />
+
+              {/* Region selection controls */}
+              {waveformSelectedRegion && selectedWordIds.size > 0 && (
+                <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-blue-800">
+                        {selectedWordIds.size} ord markerade i region
+                      </p>
+                      <p className="text-sm text-blue-700 mt-1">
+                        {formatTime(waveformSelectedRegion.start)} - {formatTime(waveformSelectedRegion.end)}
+                        {" "}({formatTime(waveformSelectedRegion.end - waveformSelectedRegion.start)})
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={clearWaveformSelection}
+                      >
+                        Avmarkera
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={handleExcludeSelected}
+                        disabled={updateMutation.isPending}
+                        className="bg-red-500 hover:bg-red-600"
+                      >
+                        <Scissors className="w-4 h-4 mr-1" />
+                        Ta bort {selectedWordIds.size} ord
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Silence removal controls */}
+              {detectedSilences.length > 0 && !waveformSelectedRegion && (
+                <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-amber-800">
+                        {detectedSilences.length} tysta partier hittade
+                      </p>
+                      <p className="text-sm text-amber-700 mt-1">
+                        Total tystnad:{" "}
+                        {formatTime(
+                          detectedSilences.reduce((sum, s) => sum + s.duration, 0)
+                        )}
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => {
+                          // Seek to first silence
+                          if (detectedSilences[0]) {
+                            seekToTime(detectedSilences[0].start);
+                          }
+                        }}
+                      >
+                        Gå till första
+                      </Button>
+                      <p className="text-xs text-amber-600 self-center max-w-[200px]">
+                        Tips: Shift+dra i vågformen för att markera region
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

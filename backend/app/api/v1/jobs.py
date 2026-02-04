@@ -28,7 +28,11 @@ from app.schemas.segment import (
     TranscriptMetadata,
     TranscriptResponse,
 )
-from app.services.anonymization import enhanced_anonymize_segments
+from app.services.anonymization import (
+    enhanced_anonymize_segments,
+    anonymize_segments as run_ner_anonymization,
+    is_anonymization_available,
+)
 from app.workers.transcription_worker import process_transcription_job
 
 router = APIRouter()
@@ -380,6 +384,81 @@ async def rename_speaker(
         new_name=rename.new_name,
         segments_updated=len(segments),
     )
+
+
+@router.post("/{job_id}/run-anonymization")
+async def run_anonymization_on_job(
+    job_id: str,
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> dict:
+    """
+    Run NER-based anonymization on an already completed transcription.
+
+    Use this when anonymization was not enabled during initial transcription.
+    Updates the anonymized_text field for all segments.
+    """
+    # Check if anonymization is available
+    if not is_anonymization_available():
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Avidentifieringstjänsten är inte tillgänglig. Transformers-biblioteket saknas.",
+        )
+
+    # Get job with segments
+    query = select(Job).where(Job.id == job_id).options(selectinload(Job.segments))
+    result = await db.execute(query)
+    job = result.scalar_one_or_none()
+
+    if not job:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Jobbet hittades inte",
+        )
+
+    if job.status != DBJobStatus.COMPLETED:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Jobbet måste vara klart för avidentifiering. Status: {job.status.value}",
+        )
+
+    # Check if already has anonymization
+    has_existing = any(s.anonymized_text and s.anonymized_text != s.text for s in job.segments)
+
+    # Convert segments to dict format for processing
+    sorted_segments = sorted(job.segments, key=lambda s: s.segment_index)
+    segments_data = [
+        {
+            "text": s.text,
+            "segment_index": s.segment_index,
+        }
+        for s in sorted_segments
+    ]
+
+    # Run NER anonymization
+    anonymized_segments = run_ner_anonymization(segments_data, progress_callback=None)
+
+    # Update segments in database
+    changes_count = 0
+    for i, segment in enumerate(sorted_segments):
+        new_text = anonymized_segments[i].get("anonymized_text", segment.text)
+        if new_text != segment.text:
+            segment.anonymized_text = new_text
+            changes_count += 1
+        elif not segment.anonymized_text:
+            # Set to original if no changes
+            segment.anonymized_text = segment.text
+
+    # Update job to indicate anonymization is enabled
+    job.enable_anonymization = True
+
+    await db.commit()
+
+    return {
+        "job_id": job_id,
+        "segments_processed": len(sorted_segments),
+        "segments_anonymized": changes_count,
+        "had_existing_anonymization": has_existing,
+    }
 
 
 @router.get("/search/global", response_model=SearchResponse)
