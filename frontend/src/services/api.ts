@@ -28,8 +28,15 @@ import type {
   WordEditResponse,
 } from "@/types";
 
+// Detect if running in Tauri desktop app
+const isTauri = typeof window !== "undefined" && "__TAURI__" in window;
+
+// In Tauri, we need to connect directly to the backend on localhost
+// In web mode, we use the Next.js proxy
+const API_BASE_URL = isTauri ? "http://127.0.0.1:8000/api/v1" : "/api/v1";
+
 const api = axios.create({
-  baseURL: "/api/v1",
+  baseURL: API_BASE_URL,
   headers: {
     "Content-Type": "application/json",
   },
@@ -85,12 +92,15 @@ export async function getTranscript(jobId: string): Promise<TranscriptResponse> 
   return response.data;
 }
 
+// Get the base URL for direct file access (export, audio, etc.)
+const getBaseUrl = () => isTauri ? "http://127.0.0.1:8000" : "";
+
 export function getExportUrl(jobId: string, format: "txt" | "md" | "json" | "srt" | "vtt", anonymized: boolean = false): string {
-  return `/api/v1/jobs/${jobId}/export?format=${format}&anonymized=${anonymized}`;
+  return `${getBaseUrl()}/api/v1/jobs/${jobId}/export?format=${format}&anonymized=${anonymized}`;
 }
 
 export function getAudioUrl(jobId: string): string {
-  return `/api/v1/jobs/${jobId}/audio`;
+  return `${getBaseUrl()}/api/v1/jobs/${jobId}/audio`;
 }
 
 // Models
@@ -231,5 +241,5 @@ export async function resetEdits(jobId: string): Promise<WordEditResponse> {
 }
 
 export function getEditedAudioUrl(jobId: string): string {
-  return `/api/v1/editor/${jobId}/download-edited-audio`;
+  return `${getBaseUrl()}/api/v1/editor/${jobId}/download-edited-audio`;
 }

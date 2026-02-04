@@ -1,0 +1,63 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "TystText",
+  "version": "1.0.0",
+  "identifier": "com.tysttext.app",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:3000",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../out"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [
+      {
+        "title": "TystText - Lokal Transkribering",
+        "width": 1200,
+        "height": 800,
+        "minWidth": 900,
+        "minHeight": 600,
+        "resizable": true,
+        "fullscreen": false,
+        "center": true
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["msi", "nsis"],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.ico"
+    ],
+    "resources": [],
+    "externalBin": ["binaries/tysttext-backend"],
+    "windows": {
+      "certificateThumbprint": null,
+      "digestAlgorithm": "sha256",
+      "timestampUrl": ""
+    },
+    "shortDescription": "Lokal transkribering av intervjuer med AI",
+    "longDescription": "TystText transkriberar ljudfiler lokalt på din dator med KB Whisper. All data stannar på din enhet - inget skickas till molnet.",
+    "copyright": "Copyright 2024 TystText",
+    "category": "Productivity"
+  },
+  "plugins": {
+    "shell": {
+      "sidecar": true,
+      "scope": [
+        {
+          "name": "binaries/tysttext-backend",
+          "sidecar": true,
+          "args": true
+        }
+      ]
+    }
+  }
+}

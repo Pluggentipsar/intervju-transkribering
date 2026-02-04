@@ -7,10 +7,14 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "cross-env TAURI_BUILD=1 tauri build",
+    "tauri:build-backend": "node scripts/build-backend.js"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.17.0",
+    "@tauri-apps/api": "^2.10.1",
     "axios": "^1.6.0",
     "clsx": "^2.1.0",
     "date-fns": "^3.2.0",
@@ -23,10 +27,12 @@
     "tailwind-merge": "^2.2.0"
   },
   "devDependencies": {
+    "@tauri-apps/cli": "^2.10.0",
     "@types/node": "^20.11.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
     "autoprefixer": "^10.4.0",
+    "cross-env": "^10.1.0",
     "eslint": "^8.56.0",
     "eslint-config-next": "^14.1.0",
     "postcss": "^8.4.0",
