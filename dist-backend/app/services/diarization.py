@@ -17,6 +17,44 @@ for _ffmpeg_path in _ffmpeg_paths:
 
 from app.config import settings
 
+# Patch huggingface_hub to accept old 'use_auth_token' parameter
+def _patch_huggingface_hub():
+    """Patch hf_hub_download to convert use_auth_token to token."""
+    try:
+        import huggingface_hub
+        if not hasattr(huggingface_hub, '_patched_for_old_api'):
+            original_download = huggingface_hub.hf_hub_download
+
+            def patched_download(*args, **kwargs):
+                # Convert old parameter name to new
+                if 'use_auth_token' in kwargs:
+                    kwargs['token'] = kwargs.pop('use_auth_token')
+                return original_download(*args, **kwargs)
+
+            huggingface_hub.hf_hub_download = patched_download
+            huggingface_hub._patched_for_old_api = True
+    except ImportError:
+        pass
+
+_patch_huggingface_hub()
+
+# Patch torch.load early for PyTorch 2.6+ compatibility
+def _patch_torch_load():
+    """Patch torch.load for PyTorch 2.6+ compatibility with pyannote models."""
+    try:
+        import torch
+        if not hasattr(torch, '_patched_for_diarization'):
+            original_load = torch.load
+            def safe_load(*args, **kwargs):
+                kwargs['weights_only'] = False
+                return original_load(*args, **kwargs)
+            torch.load = safe_load
+            torch._patched_for_diarization = True
+    except ImportError:
+        pass
+
+_patch_torch_load()
+
 logger = logging.getLogger(__name__)
 
 # Flag to track if diarization is available
@@ -142,10 +180,22 @@ def add_speaker_labels(
                 progress_callback(71, "loading_diarization_model")
             logger.info("Loading diarization model (first time, may take a while)...")
 
-            _diarization_model = DiarizationPipeline(
-                use_auth_token=_get_hf_token(),
-                device=device,
-            )
+            # Set HF_TOKEN env var for newer huggingface_hub versions
+            hf_token = _get_hf_token()
+            if hf_token:
+                os.environ["HF_TOKEN"] = hf_token
+
+            # Try with 'token' parameter first (newer API), fall back to use_auth_token
+            try:
+                _diarization_model = DiarizationPipeline(
+                    token=hf_token,
+                    device=device,
+                )
+            except TypeError:
+                _diarization_model = DiarizationPipeline(
+                    use_auth_token=hf_token,
+                    device=device,
+                )
             logger.info("Diarization model loaded successfully")
         else:
             logger.info("Using cached diarization model")

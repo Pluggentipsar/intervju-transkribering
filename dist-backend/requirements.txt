@@ -21,6 +21,7 @@ aiofiles>=23.2.0
 # Utilities
 python-dotenv>=1.0.0
 huggingface-hub>=0.20.0
+requests>=2.28.0
 
 # Anonymization (NER-based name detection)
 transformers>=4.36.0
