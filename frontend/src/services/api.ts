@@ -31,9 +31,19 @@ import type {
 // Detect if running in Tauri desktop app
 const isTauri = typeof window !== "undefined" && "__TAURI__" in window;
 
-// In Tauri, we need to connect directly to the backend on localhost
-// In web mode, we use the Next.js proxy
-const API_BASE_URL = isTauri ? "http://127.0.0.1:8000/api/v1" : "/api/v1";
+// Detect if running in production/hosted mode (not localhost development)
+const isHostedFrontend = typeof window !== "undefined" &&
+  !window.location.hostname.includes("localhost") &&
+  !window.location.hostname.includes("127.0.0.1");
+
+// API URL configuration:
+// 1. Environment variable override (set at build time)
+// 2. Tauri desktop app -> localhost:8000
+// 3. Hosted frontend (Vercel, etc.) -> localhost:8000 (connects to local backend)
+// 4. Development (localhost:3000) -> Next.js proxy at /api/v1
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  (isTauri || isHostedFrontend ? "http://127.0.0.1:8000/api/v1" : "/api/v1");
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -93,7 +103,7 @@ export async function getTranscript(jobId: string): Promise<TranscriptResponse> 
 }
 
 // Get the base URL for direct file access (export, audio, etc.)
-const getBaseUrl = () => isTauri ? "http://127.0.0.1:8000" : "";
+const getBaseUrl = () => (isTauri || isHostedFrontend) ? "http://127.0.0.1:8000" : "";
 
 export function getExportUrl(jobId: string, format: "txt" | "md" | "json" | "srt" | "vtt", anonymized: boolean = false): string {
   return `${getBaseUrl()}/api/v1/jobs/${jobId}/export?format=${format}&anonymized=${anonymized}`;

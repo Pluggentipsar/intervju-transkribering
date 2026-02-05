@@ -1,0 +1,33 @@
+# TystText Backend Requirements
+# =============================
+
+# Core Web Framework
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+pydantic>=2.5.0
+pydantic-settings>=2.1.0
+
+# Database
+sqlalchemy>=2.0.0
+aiosqlite>=0.19.0
+
+# Transcription (KB Whisper)
+faster-whisper>=1.0.0
+
+# File handling
+python-multipart>=0.0.6
+aiofiles>=23.2.0
+
+# Utilities
+python-dotenv>=1.0.0
+huggingface-hub>=0.20.0
+
+# Anonymization (NER-based name detection)
+transformers>=4.36.0
+sentencepiece>=0.1.99
+
+# Speaker Diarization
+# Note: Requires accepting HuggingFace license agreements for pyannote models
+# Visit: https://huggingface.co/pyannote/speaker-diarization-3.1
+whisperx>=3.1.0
+pyannote.audio>=3.1.0
