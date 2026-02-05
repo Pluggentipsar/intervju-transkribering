@@ -29,6 +29,9 @@ class Settings(BaseSettings):
     max_file_size_mb: int = 2000  # 2GB max
     chunk_length_seconds: int = 30
 
+    # Frontend static files (built with 'npm run build' in frontend/)
+    static_dir: Path = Path(__file__).parent.parent.parent / "frontend" / "out"
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"

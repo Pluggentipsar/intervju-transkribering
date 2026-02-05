@@ -3,6 +3,11 @@
 import { useState, useMemo, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
+
+// Required for static export - dynamic pages are rendered client-side
+export function generateStaticParams() {
+  return [];
+}
 import { formatDistanceToNow } from "date-fns";
 import { sv } from "date-fns/locale";
 import {

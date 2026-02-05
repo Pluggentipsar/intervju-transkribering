@@ -3,6 +3,11 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
+
+// Required for static export - dynamic pages are rendered client-side
+export function generateStaticParams() {
+  return [];
+}
 import Link from "next/link";
 import {
   ArrowLeft,

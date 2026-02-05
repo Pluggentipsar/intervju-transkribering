@@ -1,17 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Static export - served by FastAPI backend
+  output: "export",
+
   // Enable React strict mode
   reactStrictMode: true,
 
-  // API proxy for development
-  async rewrites() {
-    return [
-      {
-        source: "/api/:path*",
-        destination: "http://localhost:8000/api/:path*",
-      },
-    ];
-  },
+  // Trailing slash creates /page/index.html structure (easier to serve)
+  trailingSlash: true,
 };
 
 module.exports = nextConfig;
