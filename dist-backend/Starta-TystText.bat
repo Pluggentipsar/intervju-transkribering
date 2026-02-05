@@ -1,24 +1,29 @@
 @echo off
-chcp 65001 >nul
 setlocal enabledelayedexpansion
 
-echo.
-echo ╔══════════════════════════════════════════════════════════════╗
-echo ║              TystText - Transkribering                       ║
-echo ║         Lokal backend för webbgränssnitt                     ║
-echo ╚══════════════════════════════════════════════════════════════╝
-echo.
+:: Set UTF-8 codepage for Swedish characters
+chcp 65001 >nul 2>&1
 
-:: Get the directory where this script is located
+:: Get script directory FIRST (before any output)
 set "SCRIPT_DIR=%~dp0"
 cd /d "%SCRIPT_DIR%"
+if errorlevel 1 (
+    echo FEL: Kunde inte byta till skriptets katalog: %SCRIPT_DIR%
+    pause
+    exit /b 1
+)
+
+echo.
+echo ================================================================
+echo              TystText - Transkribering
+echo          Lokal backend for webbgranssnitt
+echo ================================================================
+echo.
 
 :: Configuration
 set "VENV_DIR=%SCRIPT_DIR%venv"
 set "MARKER_FILE=%VENV_DIR%\.installed"
 set "FRONTEND_URL=http://localhost:3000"
-:: When deployed, change FRONTEND_URL to actual URL like:
-:: set "FRONTEND_URL=https://tysttext.vercel.app"
 
 :: Find Python 3.11 or 3.12 (PyTorch doesn't support 3.13+ yet)
 echo [1/5] Letar efter Python 3.11 eller 3.12...
@@ -69,93 +74,103 @@ if not errorlevel 1 (
 
 :: No compatible Python found
 echo.
-echo ╔══════════════════════════════════════════════════════════════╗
-echo ║  ERROR: Python 3.11 eller 3.12 hittades inte!                ║
-echo ╠══════════════════════════════════════════════════════════════╣
-echo ║                                                              ║
-echo ║  TystText kräver Python 3.11 eller 3.12 för att fungera.    ║
-echo ║  (Nyare versioner som 3.13/3.14 stöds inte av PyTorch ännu) ║
-echo ║                                                              ║
-echo ║  Ladda ned Python 3.11 från:                                 ║
-echo ║  https://www.python.org/downloads/release/python-3119/       ║
-echo ║                                                              ║
-echo ║  VIKTIGT: Bocka i "Add Python to PATH" vid installation!     ║
-echo ╚══════════════════════════════════════════════════════════════╝
+echo ================================================================
+echo   FEL: Python 3.11 eller 3.12 hittades inte!
+echo ================================================================
 echo.
-pause
+echo   TystText kraver Python 3.11 eller 3.12 for att fungera.
+echo   (Nyare versioner som 3.13/3.14 stods inte av PyTorch annu)
+echo.
+echo   Ladda ned Python 3.11 fran:
+echo   https://www.python.org/downloads/release/python-3119/
+echo.
+echo   VIKTIGT: Bocka i "Add Python to PATH" vid installation!
+echo.
+echo ================================================================
+echo.
+echo Tryck valfri tangent for att stanga...
+pause >nul
 exit /b 1
 
 :found_python
 :: Get and display Python version
 for /f "tokens=*" %%v in ('%PYTHON_EXE% --version 2^>^&1') do set "PY_VERSION=%%v"
 echo    Hittade: %PY_VERSION%
-echo    Sökväg: %PYTHON_EXE%
+echo    Sokvag: %PYTHON_EXE%
 
 :: Create venv if it doesn't exist
-if not exist "%VENV_DIR%\Scripts\activate.bat" (
-    echo.
-    echo [2/5] Skapar virtuell miljö (första gången)...
-    %PYTHON_EXE% -m venv "%VENV_DIR%"
-    if errorlevel 1 (
-        echo ERROR: Kunde inte skapa virtuell miljö.
-        pause
-        exit /b 1
-    )
-    echo    Virtuell miljö skapad.
-) else (
-    echo [2/5] Virtuell miljö finns redan.
+set "VENV_ACTIVATE=%VENV_DIR%\Scripts\activate.bat"
+if exist "%VENV_ACTIVATE%" goto :venv_exists
+
+echo.
+echo [2/5] Skapar virtuell miljo (forsta gangen)...
+%PYTHON_EXE% -m venv "%VENV_DIR%"
+if errorlevel 1 (
+    echo FEL: Kunde inte skapa virtuell miljo.
+    pause
+    exit /b 1
 )
+echo    Virtuell miljo skapad.
+goto :venv_ready
+
+:venv_exists
+echo [2/5] Virtuell miljo finns redan.
+
+:venv_ready
 
 :: Activate venv
-echo [3/5] Aktiverar virtuell miljö...
+echo [3/5] Aktiverar virtuell miljo...
 call "%VENV_DIR%\Scripts\activate.bat"
 
 :: Install dependencies if marker doesn't exist
-if not exist "%MARKER_FILE%" (
-    echo.
-    echo [4/5] Installerar beroenden (detta tar några minuter första gången)...
-    echo.
+if exist "%MARKER_FILE%" goto :deps_installed
 
-    :: Upgrade pip first
-    echo    Uppgraderar pip...
-    python -m pip install --upgrade pip --quiet
+echo.
+echo [4/5] Installerar beroenden (detta tar nagra minuter forsta gangen)...
+echo.
 
-    :: Install main requirements first (this may install CPU torch)
-    echo    Installerar Python-paket...
-    pip install -r "%SCRIPT_DIR%requirements.txt"
-    if errorlevel 1 (
-        echo ERROR: Kunde inte installera beroenden.
-        pause
-        exit /b 1
-    )
+:: Upgrade pip first
+echo    Uppgraderar pip...
+python -m pip install --upgrade pip --quiet
 
-    :: Now upgrade PyTorch to CUDA version (overrides CPU version from requirements)
-    echo    Uppgraderar PyTorch till CUDA-version for GPU-acceleration...
-    pip install --upgrade torch torchaudio --index-url https://download.pytorch.org/whl/cu121 2>nul
-    if errorlevel 1 (
-        echo    OBS: CUDA-version kunde inte installeras, anvander CPU.
-        echo    Transkribering fungerar men ar langsammare utan GPU.
-    ) else (
-        echo    CUDA-version installerad - GPU-acceleration aktiverad!
-    )
-
-    :: Create marker file
-    echo Installation completed > "%MARKER_FILE%"
-    echo.
-    echo    Alla beroenden installerade!
-) else (
-    echo [4/5] Beroenden redan installerade.
+:: Install main requirements
+echo    Installerar Python-paket (detta tar ett tag)...
+pip install -r "%SCRIPT_DIR%requirements.txt"
+if errorlevel 1 (
+    echo FEL: Kunde inte installera beroenden.
+    pause
+    exit /b 1
 )
+
+:: Try CUDA version of PyTorch
+echo    Uppgraderar PyTorch till CUDA-version for GPU-acceleration...
+pip install --upgrade torch torchaudio --index-url https://download.pytorch.org/whl/cu121 2>nul
+if errorlevel 1 (
+    echo    OBS: CUDA-version kunde inte installeras, anvander CPU.
+) else (
+    echo    CUDA-version installerad - GPU-acceleration aktiverad!
+)
+
+:: Create marker file
+echo Installation completed > "%MARKER_FILE%"
+echo.
+echo    Alla beroenden installerade!
+goto :start_server
+
+:deps_installed
+echo [4/5] Beroenden redan installerade.
+
+:start_server
 
 :: Start the backend server
 echo.
-echo [5/5] Startar TystText-backend på http://localhost:8000
+echo [5/5] Startar TystText-backend pa http://localhost:8000
 echo.
-echo ══════════════════════════════════════════════════════════════
-echo   Backend körs nu. Stäng inte detta fönster!
+echo ================================================================
+echo   Backend kors nu. STANG INTE DETTA FONSTER!
 echo.
-echo   Öppna webbgränssnittet: %FRONTEND_URL%
-echo ══════════════════════════════════════════════════════════════
+echo   Oppna webbgranssnittet: %FRONTEND_URL%
+echo ================================================================
 echo.
 
 :: Open browser after a short delay (give server time to start)

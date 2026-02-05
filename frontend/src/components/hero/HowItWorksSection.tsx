@@ -1,4 +1,7 @@
-import { Upload, Cpu, FileText, ArrowRight } from "lucide-react";
+"use client";
+
+import { Upload, Cpu, FileText, ArrowRight, Download, Monitor } from "lucide-react";
+import { useBackendStatusContext } from "@/contexts/BackendStatusContext";
 
 const steps = [
   {
@@ -25,6 +28,8 @@ const steps = [
 ];
 
 export function HowItWorksSection() {
+  const { connected, openSetupWizard } = useBackendStatusContext();
+
   return (
     <section className="py-24 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
@@ -40,6 +45,33 @@ export function HowItWorksSection() {
             Från ljudfil till färdig transkription på bara några minuter
           </p>
         </div>
+
+        {/* Backend notice - only show when not connected */}
+        {!connected && (
+          <div className="mb-12 max-w-2xl mx-auto">
+            <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-primary-50 to-amber-50 border border-primary-100 rounded-2xl">
+              <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-primary-400 to-primary-500 rounded-xl flex items-center justify-center shadow-lg">
+                <Monitor className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-900">
+                  Allt körs på din dator
+                </p>
+                <p className="text-sm text-gray-600">
+                  Den här sidan är bara gränssnittet. För att transkribera behöver du{" "}
+                  <button
+                    onClick={openSetupWizard}
+                    className="text-primary-600 hover:text-primary-700 font-medium underline underline-offset-2"
+                  >
+                    ladda ned och starta TystText-motorn
+                  </button>{" "}
+                  på din dator.
+                </p>
+              </div>
+              <Download className="w-5 h-5 text-primary-500 flex-shrink-0" />
+            </div>
+          </div>
+        )}
 
         {/* Steps */}
         <div className="grid md:grid-cols-3 gap-8 lg:gap-12">

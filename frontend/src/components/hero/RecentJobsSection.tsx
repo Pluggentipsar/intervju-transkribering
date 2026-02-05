@@ -80,7 +80,7 @@ export function RecentJobsSection() {
               Senaste transkriptioner
             </h2>
             <p className="text-gray-600 mt-1">
-              Fortsatt dar du slutade
+              Fortsätt där du slutade
             </p>
           </div>
           <Link

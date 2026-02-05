@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { IndeterminateProgress } from "@/components/ui/ProgressBar";
+import { AIPromptToolbar } from "@/components/transcription/AIPromptToolbar";
 import { anonymizeText, getAnonymizationStatus } from "@/services/api";
 import type { TextAnonymizationRequest, NerEntityTypesConfig } from "@/types";
 
@@ -208,7 +209,7 @@ export default function AnonymizePage() {
                   value={inputText}
                   onChange={(e) => setInputText(e.target.value)}
                   placeholder="Klistra in din text här..."
-                  className="w-full h-64 px-4 py-3 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 resize-none transition-colors"
+                  className="w-full min-h-64 px-4 py-3 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 resize-y transition-colors"
                 />
                 <div className="mt-2 text-xs text-gray-500 text-right">
                   {inputText.length} tecken
@@ -467,7 +468,7 @@ export default function AnonymizePage() {
                 </div>
                 <div
                   className={clsx(
-                    "w-full h-64 px-4 py-3 border rounded-xl text-sm overflow-y-auto whitespace-pre-wrap transition-colors",
+                    "w-full min-h-64 px-4 py-3 border rounded-xl text-sm overflow-y-auto whitespace-pre-wrap transition-colors resize-y",
                     mutation.data ? "bg-white border-green-200" : "bg-gray-50 border-gray-200"
                   )}
                 >
@@ -578,6 +579,11 @@ export default function AnonymizePage() {
           </div>
         </div>
       </div>
+
+      {/* AI Prompt Toolbar - show when anonymized text is available */}
+      {mutation.data?.anonymized_text && (
+        <AIPromptToolbar transcriptText={mutation.data.anonymized_text} />
+      )}
     </div>
   );
 }

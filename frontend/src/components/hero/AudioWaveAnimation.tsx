@@ -162,7 +162,7 @@ function TypewriterWithAnonymization({
       } else {
         clearInterval(interval);
       }
-    }, 25);
+    }, 18); // Faster typing speed
 
     return () => clearInterval(interval);
   }, [started, fullText, segments]);
@@ -216,7 +216,7 @@ function TypewriterWithAnonymization({
 }
 
 const anonymizableWords = [
-  { original: "Jonas Jonasson", replacement: "[NAMN]" },
+  { original: "Joel Rangsjö", replacement: "[NAMN]" },
   { original: "Bäckadalsgymnasiet", replacement: "[GYMNASIESKOLA]" },
   { original: "Jönköping", replacement: "[STAD]" },
 ];
@@ -224,7 +224,7 @@ const anonymizableWords = [
 const transcriptLines = [
   {
     speaker: "Talare 1",
-    text: "Hej Jonas Jonasson, välkommen hit!",
+    text: "Hej Joel Rangsjö, välkommen hit!",
     color: "bg-primary-500/30",
   },
   {
@@ -243,12 +243,12 @@ export function AudioWaveAnimation({ className }: AudioWaveAnimationProps) {
   const [phase, setPhase] = useState<"wave" | "morphing" | "text" | "anonymizing">("wave");
 
   useEffect(() => {
-    // Start morphing after 3 seconds
-    const morphTimer = setTimeout(() => setPhase("morphing"), 3000);
-    // Show text after 4 seconds
-    const textTimer = setTimeout(() => setPhase("text"), 4000);
-    // Start anonymization after text is fully typed (around 8 seconds)
-    const anonymizeTimer = setTimeout(() => setPhase("anonymizing"), 9000);
+    // Faster animations - start morphing after 1.5 seconds
+    const morphTimer = setTimeout(() => setPhase("morphing"), 1500);
+    // Show text after 2 seconds
+    const textTimer = setTimeout(() => setPhase("text"), 2000);
+    // Start anonymization after text is typed (around 5 seconds)
+    const anonymizeTimer = setTimeout(() => setPhase("anonymizing"), 5500);
 
     return () => {
       clearTimeout(morphTimer);
@@ -327,9 +327,9 @@ export function AudioWaveAnimation({ className }: AudioWaveAnimationProps) {
               {(phase === "text" || phase === "anonymizing") && (
                 <TypewriterWithAnonymization
                   segments={line.segments}
-                  typingDelay={index * 800 + 300}
+                  typingDelay={index * 500 + 200}
                   isAnonymizing={phase === "anonymizing"}
-                  anonymizationBaseDelay={index * 300}
+                  anonymizationBaseDelay={index * 200}
                 />
               )}
             </span>

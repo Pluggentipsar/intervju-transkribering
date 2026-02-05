@@ -4,7 +4,10 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { clsx } from "clsx";
-import { Menu, X, Mic } from "lucide-react";
+import { Menu, X, Mic, HelpCircle } from "lucide-react";
+import { ConnectionStatus } from "@/components/setup";
+import { AboutModal } from "@/components/about";
+import { useBackendStatusContext } from "@/contexts/BackendStatusContext";
 
 const navItems = [
   { href: "/", label: "Hem" },
@@ -16,7 +19,10 @@ const navItems = [
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isAboutOpen, setIsAboutOpen] = useState(false);
   const pathname = usePathname();
+  const { connected, checking, systemInfo, checkConnection, openSetupWizard } =
+    useBackendStatusContext();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -82,6 +88,33 @@ export function Header() {
             })}
           </nav>
 
+          {/* Right side items */}
+          <div className="hidden md:flex items-center gap-2">
+            {/* Help/About button */}
+            <button
+              onClick={() => setIsAboutOpen(true)}
+              className={clsx(
+                "p-2 rounded-lg transition-colors",
+                isScrolled
+                  ? "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+                  : "text-white/60 hover:text-white hover:bg-white/10"
+              )}
+              aria-label="Om TystText"
+              title="Om TystText"
+            >
+              <HelpCircle className="w-5 h-5" />
+            </button>
+
+            {/* Connection Status */}
+            <ConnectionStatus
+              isConnected={connected}
+              isChecking={checking}
+              systemInfo={systemInfo}
+              onRetry={checkConnection}
+              onOpenSetup={openSetupWizard}
+            />
+          </div>
+
           {/* Mobile menu button */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -106,7 +139,7 @@ export function Header() {
       <div
         className={clsx(
           "md:hidden overflow-hidden transition-all duration-300 ease-in-out",
-          isMobileMenuOpen ? "max-h-64" : "max-h-0"
+          isMobileMenuOpen ? "max-h-80" : "max-h-0"
         )}
       >
         <nav className="bg-white border-t border-gray-200 shadow-lg px-4 py-3 space-y-1 animate-slide-down">
@@ -128,8 +161,29 @@ export function Header() {
               </Link>
             );
           })}
+          {/* Mobile About button */}
+          <button
+            onClick={() => {
+              setIsMobileMenuOpen(false);
+              setIsAboutOpen(true);
+            }}
+            className="w-full flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors"
+          >
+            <HelpCircle className="w-4 h-4" />
+            Om TystText
+          </button>
         </nav>
       </div>
+
+      {/* About Modal */}
+      <AboutModal
+        isOpen={isAboutOpen}
+        onClose={() => setIsAboutOpen(false)}
+        onOpenSetup={() => {
+          setIsAboutOpen(false);
+          openSetupWizard();
+        }}
+      />
     </header>
   );
 }
