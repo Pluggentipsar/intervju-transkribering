@@ -37,6 +37,9 @@ class Job(Base):
     file_size: Mapped[int] = mapped_column(Integer, nullable=False)
     duration_seconds: Mapped[float | None] = mapped_column(Float, nullable=True)
 
+    # Custom name (optional, defaults to formatted date if not set)
+    name: Mapped[str | None] = mapped_column(String(255), nullable=True)
+
     # Settings
     model: Mapped[str] = mapped_column(String(100), default="KBLab/kb-whisper-small")
     enable_diarization: Mapped[bool] = mapped_column(Boolean, default=True)

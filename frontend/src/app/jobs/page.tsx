@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { formatDistanceToNow } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
 import { sv } from "date-fns/locale";
 import {
   Clock,
@@ -15,9 +16,13 @@ import {
   FileText,
   Shield,
   StopCircle,
+  Pencil,
+  Check,
+  X,
 } from "lucide-react";
 import Link from "next/link";
-import { listJobs, cancelJob } from "@/services/api";
+import { useRouter } from "next/navigation";
+import { listJobs, cancelJob, updateJob } from "@/services/api";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { Button } from "@/components/ui/Button";
 import { GlobalSearch } from "@/components/search/GlobalSearch";
@@ -74,10 +79,33 @@ function formatFileSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function JobCard({ job, onCancel }: { job: Job; onCancel?: (jobId: string) => void }) {
+function getDisplayName(job: Job): string {
+  if (job.name) return job.name;
+  const date = new Date(job.created_at);
+  return format(date, "d MMM yyyy HH:mm", { locale: sv });
+}
+
+function JobCard({
+  job,
+  onCancel,
+  onRename,
+}: {
+  job: Job;
+  onCancel?: (jobId: string) => void;
+  onRename?: (jobId: string, newName: string) => void;
+}) {
+  const router = useRouter();
+  const [isEditing, setIsEditing] = useState(false);
+  const [editName, setEditName] = useState(job.name || "");
   const config = STATUS_CONFIG[job.status];
   const StatusIcon = config.icon;
   const isActive = job.status === "pending" || job.status === "processing";
+
+  const handleCardClick = () => {
+    if (!isEditing) {
+      router.push(`/jobs/${job.id}`);
+    }
+  };
 
   const handleCancel = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -87,10 +115,46 @@ function JobCard({ job, onCancel }: { job: Job; onCancel?: (jobId: string) => vo
     }
   };
 
+  const handleEditClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setEditName(job.name || getDisplayName(job));
+    setIsEditing(true);
+  };
+
+  const handleSave = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (onRename) {
+      onRename(job.id, editName.trim());
+    }
+    setIsEditing(false);
+  };
+
+  const handleCancelEdit = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsEditing(false);
+    setEditName(job.name || "");
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      if (onRename) {
+        onRename(job.id, editName.trim());
+      }
+      setIsEditing(false);
+    } else if (e.key === "Escape") {
+      setIsEditing(false);
+      setEditName(job.name || "");
+    }
+  };
+
   return (
-    <Link
-      href={`/jobs/${job.id}`}
-      className="group block bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-primary-200 transition-all duration-300 overflow-hidden"
+    <div
+      onClick={handleCardClick}
+      className="group block bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-primary-200 transition-all duration-300 overflow-hidden cursor-pointer"
     >
       <div className="p-6">
         <div className="flex items-start gap-4">
@@ -101,11 +165,48 @@ function JobCard({ job, onCancel }: { job: Job; onCancel?: (jobId: string) => vo
 
           <div className="flex-1 min-w-0">
             {/* Header row */}
-            <div className="flex items-center justify-between gap-3 mb-2">
-              <h3 className="font-semibold text-gray-900 truncate group-hover:text-primary-600 transition-colors">
-                {job.file_name}
-              </h3>
-              <div className="flex items-center gap-2">
+            <div className="flex items-center justify-between gap-3 mb-1">
+              {isEditing ? (
+                <div className="flex items-center gap-2 flex-1" onClick={(e) => e.stopPropagation()}>
+                  <input
+                    type="text"
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    onClick={(e) => e.stopPropagation()}
+                    className="flex-1 px-2 py-1 text-lg font-semibold border border-primary-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
+                    autoFocus
+                  />
+                  <button
+                    onClick={handleSave}
+                    className="p-1.5 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                    title="Spara"
+                  >
+                    <Check className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={handleCancelEdit}
+                    className="p-1.5 text-gray-400 hover:bg-gray-100 rounded-lg transition-colors"
+                    title="Avbryt"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                  <h3 className="font-semibold text-gray-900 truncate group-hover:text-primary-600 transition-colors">
+                    {getDisplayName(job)}
+                  </h3>
+                  <button
+                    onClick={handleEditClick}
+                    className="p-1 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded opacity-0 group-hover:opacity-100 transition-all"
+                    title="Byt namn"
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+              <div className="flex items-center gap-2 flex-shrink-0">
                 {isActive && onCancel && (
                   <button
                     onClick={handleCancel}
@@ -126,6 +227,9 @@ function JobCard({ job, onCancel }: { job: Job; onCancel?: (jobId: string) => vo
                 </div>
               </div>
             </div>
+
+            {/* File name subtitle */}
+            <p className="text-xs text-gray-400 mb-2 truncate">{job.file_name}</p>
 
             {/* Meta info */}
             <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
@@ -178,7 +282,7 @@ function JobCard({ job, onCancel }: { job: Job; onCancel?: (jobId: string) => vo
           </div>
         </div>
       </div>
-    </Link>
+    </div>
   );
 }
 
@@ -198,10 +302,22 @@ export default function JobsPage() {
     },
   });
 
+  const renameMutation = useMutation({
+    mutationFn: ({ jobId, name }: { jobId: string; name: string }) =>
+      updateJob(jobId, { name: name || null }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["jobs"] });
+    },
+  });
+
   const handleCancel = (jobId: string) => {
     if (confirm("Är du säker på att du vill avbryta denna transkribering?")) {
       cancelMutation.mutate(jobId);
     }
+  };
+
+  const handleRename = (jobId: string, newName: string) => {
+    renameMutation.mutate({ jobId, name: newName });
   };
 
   const jobs = data?.jobs || [];
@@ -329,7 +445,7 @@ export default function JobsPage() {
         ) : (
           <div className="space-y-4">
             {jobs.map((job) => (
-              <JobCard key={job.id} job={job} onCancel={handleCancel} />
+              <JobCard key={job.id} job={job} onCancel={handleCancel} onRename={handleRename} />
             ))}
           </div>
         )}

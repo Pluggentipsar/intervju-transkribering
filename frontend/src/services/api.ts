@@ -6,6 +6,7 @@ import axios from "axios";
 import type {
   Job,
   JobCreateRequest,
+  JobUpdateRequest,
   JobListResponse,
   ModelInfo,
   SystemStatus,
@@ -93,6 +94,11 @@ export async function deleteJob(jobId: string): Promise<void> {
 
 export async function cancelJob(jobId: string): Promise<{ status: string; job_id: string }> {
   const response = await api.post<{ status: string; job_id: string }>(`/jobs/${jobId}/cancel`);
+  return response.data;
+}
+
+export async function updateJob(jobId: string, update: JobUpdateRequest): Promise<Job> {
+  const response = await api.patch<Job>(`/jobs/${jobId}`, update);
   return response.data;
 }
 

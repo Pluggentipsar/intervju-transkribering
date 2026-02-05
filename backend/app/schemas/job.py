@@ -46,6 +46,7 @@ class JobResponse(BaseModel):
     file_name: str
     file_size: int
     duration_seconds: float | None = None
+    name: str | None = None
     model: str
     enable_diarization: bool
     enable_anonymization: bool
@@ -60,6 +61,12 @@ class JobResponse(BaseModel):
     speaker_count: int | None = None
     word_count: int | None = None
     segment_count: int | None = None
+
+
+class JobUpdate(BaseModel):
+    """Schema for updating a job."""
+
+    name: str | None = None
 
 
 class JobListResponse(BaseModel):

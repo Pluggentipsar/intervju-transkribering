@@ -9,6 +9,7 @@ export interface Job {
   file_name: string;
   file_size: number;
   duration_seconds: number | null;
+  name: string | null;
   model: string;
   enable_diarization: boolean;
   enable_anonymization: boolean;
@@ -23,6 +24,10 @@ export interface Job {
   speaker_count: number | null;
   word_count: number | null;
   segment_count: number | null;
+}
+
+export interface JobUpdateRequest {
+  name?: string | null;
 }
 
 export interface JobListResponse {

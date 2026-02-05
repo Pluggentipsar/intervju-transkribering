@@ -3,7 +3,7 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
-import { formatDistanceToNow } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
 import { sv } from "date-fns/locale";
 import {
   ArrowLeft,
@@ -63,6 +63,12 @@ function formatDuration(seconds: number | null): string {
     return `${hours}h ${minutes}m ${secs}s`;
   }
   return `${minutes}m ${secs}s`;
+}
+
+function getDisplayName(job: { name: string | null; created_at: string }): string {
+  if (job.name) return job.name;
+  const date = new Date(job.created_at);
+  return format(date, "d MMM yyyy HH:mm", { locale: sv });
 }
 
 export default function JobDetailClient() {
@@ -216,10 +222,10 @@ export default function JobDetailClient() {
         </button>
         <div className="flex-1">
           <h1 className="text-xl font-bold text-gray-900 truncate">
-            {job.file_name}
+            {getDisplayName(job)}
           </h1>
           <p className="text-sm text-gray-500">
-            Skapad{" "}
+            {job.file_name} • Skapad{" "}
             {formatDistanceToNow(new Date(job.created_at), {
               addSuffix: true,
               locale: sv,

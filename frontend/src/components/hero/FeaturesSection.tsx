@@ -1,23 +1,11 @@
-import { Shield, Users, Lock, Zap, Server, FileCheck } from "lucide-react";
+import { Shield, Users, Lock, Zap, Server, Sparkles } from "lucide-react";
 
 const features = [
   {
-    icon: Server,
-    title: "100% lokal bearbetning",
-    description: "All transkribering sker på din egen server. Ingen data skickas till externa tjänster.",
-    gradient: "from-blue-500 to-blue-600",
-  },
-  {
-    icon: Users,
-    title: "Automatisk talaridentifiering",
-    description: "Identifiera olika talare i intervjun med WhisperX och pyannote-teknologi.",
-    gradient: "from-purple-500 to-purple-600",
-  },
-  {
-    icon: Shield,
-    title: "KB-BERT avidentifiering",
-    description: "Ta bort känslig information som namn, platser, organisationer och personnummer.",
-    gradient: "from-amber-500 to-amber-600",
+    icon: Sparkles,
+    title: "AI-redo på sekunder",
+    description: "Kopiera transkriptionen direkt till ChatGPT, Claude eller andra AI-verktyg för analys och sammanfattning.",
+    gradient: "from-violet-500 to-violet-600",
   },
   {
     icon: Zap,
@@ -26,16 +14,28 @@ const features = [
     gradient: "from-primary-500 to-primary-600",
   },
   {
-    icon: Lock,
-    title: "GDPR-vänlig",
-    description: "Perfekt för forskningsdata och känslig information. Du behåller full kontroll.",
-    gradient: "from-green-500 to-green-600",
+    icon: Shield,
+    title: "Avidentifiera känslig info",
+    description: "Ta bort namn, platser, organisationer och personnummer innan du delar med AI eller kollegor.",
+    gradient: "from-amber-500 to-amber-600",
   },
   {
-    icon: FileCheck,
-    title: "Flexibel export",
-    description: "Exportera som ren text, formaterad markdown eller strukturerad JSON.",
-    gradient: "from-rose-500 to-rose-600",
+    icon: Users,
+    title: "Automatisk talaridentifiering",
+    description: "Vet vem som sa vad — perfekt för intervjuer, möten och fokusgrupper.",
+    gradient: "from-purple-500 to-purple-600",
+  },
+  {
+    icon: Server,
+    title: "100% lokal bearbetning",
+    description: "Ingen data lämnar din dator. Perfekt för känsligt material och GDPR-compliance.",
+    gradient: "from-blue-500 to-blue-600",
+  },
+  {
+    icon: Lock,
+    title: "Du äger din data",
+    description: "Inga molntjänster, inga prenumerationer, inga dolda kostnader. Full kontroll.",
+    gradient: "from-green-500 to-green-600",
   },
 ];
 
@@ -49,10 +49,10 @@ export function FeaturesSection() {
             Funktioner
           </span>
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Byggd för svenska intervjuer
+            Från intervju till AI-redo text
           </h2>
           <p className="text-gray-600 max-w-xl mx-auto">
-            Specialanpassad för forskare, journalister och alla som arbetar med intervjumaterial
+            Transkribera och avidentifiera på svenska — få text som du enkelt kan analysera med ChatGPT, Claude eller andra AI-verktyg
           </p>
         </div>
 

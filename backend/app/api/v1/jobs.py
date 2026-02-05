@@ -12,7 +12,7 @@ from app.config import settings
 from app.db.database import get_db
 from app.models.job import Job
 from app.models.job import JobStatus as DBJobStatus
-from app.schemas.job import JobCreate, JobListResponse, JobResponse
+from app.schemas.job import JobCreate, JobListResponse, JobResponse, JobUpdate
 from app.models.segment import Segment
 from app.schemas.segment import (
     EnhancedAnonymizationRequest,
@@ -187,6 +187,32 @@ async def get_transcript(
             segment_count=len(sorted_segments),
         ),
     )
+
+
+@router.patch("/{job_id}", response_model=JobResponse)
+async def update_job(
+    job_id: str,
+    update: JobUpdate,
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> Job:
+    """Update a job's name or other editable fields."""
+    query = select(Job).where(Job.id == job_id)
+    result = await db.execute(query)
+    job = result.scalar_one_or_none()
+
+    if not job:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Jobbet hittades inte",
+        )
+
+    if update.name is not None:
+        job.name = update.name if update.name.strip() else None
+
+    await db.commit()
+    await db.refresh(job)
+
+    return job
 
 
 @router.delete("/{job_id}")
