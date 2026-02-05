@@ -1,7 +1,23 @@
 """Application configuration."""
 
+import sys
 from pathlib import Path
 from pydantic_settings import BaseSettings
+
+
+def get_persistent_data_dir() -> Path:
+    """Get a persistent data directory that works for both dev and frozen exe."""
+    if getattr(sys, 'frozen', False):
+        # Running as PyInstaller exe - use user's cache directory
+        # This avoids Windows symlink issues in temp directories
+        return Path.home() / ".cache" / "tysttext"
+    else:
+        # Development mode - use current directory
+        return Path(".")
+
+
+# Compute data directory once at module load
+_DATA_DIR = get_persistent_data_dir()
 
 
 class Settings(BaseSettings):
@@ -11,10 +27,10 @@ class Settings(BaseSettings):
     app_name: str = "Intervju-Transkribering"
     debug: bool = False
 
-    # Paths
-    upload_dir: Path = Path("uploads")
-    models_dir: Path = Path("models")
-    database_url: str = "sqlite+aiosqlite:///./transcription.db"
+    # Paths - use persistent directory for frozen exe
+    upload_dir: Path = _DATA_DIR / "uploads"
+    models_dir: Path = _DATA_DIR / "models"
+    database_url: str = f"sqlite+aiosqlite:///{_DATA_DIR / 'transcription.db'}"
 
     # Whisper settings
     default_model: str = "KBLab/kb-whisper-small"

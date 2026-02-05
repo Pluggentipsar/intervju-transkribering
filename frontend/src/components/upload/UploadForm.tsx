@@ -4,14 +4,14 @@
 
 "use client";
 
-import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { FileDropzone } from "./FileDropzone";
 import { ModelSelector } from "./ModelSelector";
 import { Button } from "@/components/ui/Button";
 import { ProgressBar } from "@/components/ui/ProgressBar";
-import { uploadFile, createJob } from "@/services/api";
+import { uploadFile, createJob, getHFTokenStatus, saveHFToken } from "@/services/api";
 import { useJobPolling } from "@/hooks/usePolling";
 import type { NerEntityTypesConfig } from "@/types";
 
@@ -47,6 +47,7 @@ const STEP_LABELS: Record<string, string> = {
 
 export function UploadForm() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedModel, setSelectedModel] = useState("KBLab/kb-whisper-small");
   const [enableDiarization, setEnableDiarization] = useState(true);
@@ -55,9 +56,29 @@ export function UploadForm() {
   const [currentJobId, setCurrentJobId] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
 
+  // HF Token state
+  const [hfTokenInput, setHfTokenInput] = useState("");
+  const [showTokenSetup, setShowTokenSetup] = useState(false);
+
   const handleEntityTypeChange = (type: keyof NerEntityTypesConfig, checked: boolean) => {
     setNerEntityTypes((prev) => ({ ...prev, [type]: checked }));
   };
+
+  // Check HF token status
+  const { data: hfTokenStatus } = useQuery({
+    queryKey: ["hf-token-status"],
+    queryFn: getHFTokenStatus,
+    staleTime: 60000,
+  });
+
+  // Save HF token mutation
+  const saveTokenMutation = useMutation({
+    mutationFn: saveHFToken,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["hf-token-status"] });
+      setHfTokenInput("");
+    },
+  });
 
   // Poll job status
   const { data: job } = useJobPolling(currentJobId);
@@ -195,13 +216,123 @@ export function UploadForm() {
               disabled={isProcessing}
               className="w-4 h-4 text-primary-600 rounded border-gray-300 focus:ring-primary-500"
             />
-            <div>
-              <span className="font-medium text-gray-900">Talaridentifiering</span>
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <span className="font-medium text-gray-900">Talaridentifiering</span>
+                {hfTokenStatus?.configured ? (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                    Aktiverad
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
+                    Kräver konfiguration
+                  </span>
+                )}
+              </div>
               <p className="text-sm text-gray-500">
-                Identifiera olika talare i intervjun (kräver HuggingFace-konto)
+                Identifiera olika talare i intervjun
               </p>
             </div>
           </label>
+
+          {/* Diarization setup - collapsible, not intrusive */}
+          {enableDiarization && !hfTokenStatus?.configured && (
+            <div className="mt-3 ml-7">
+              <button
+                type="button"
+                onClick={() => setShowTokenSetup(!showTokenSetup)}
+                className="flex items-center gap-2 text-amber-700 hover:text-amber-900 font-medium text-sm"
+              >
+                <svg className={`w-4 h-4 transition-transform ${showTokenSetup ? 'rotate-90' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+                Konfigurera talaridentifiering (första gången)
+              </button>
+
+              {showTokenSetup && (
+                <div className="mt-3 p-4 bg-amber-50 border border-amber-200 rounded-lg space-y-4">
+                  {/* Video placeholder */}
+                  <div className="aspect-video bg-gray-900 rounded-lg flex items-center justify-center">
+                    {/* Replace YOUR_VIDEO_ID with actual YouTube video ID */}
+                    <iframe
+                      className="w-full h-full rounded-lg"
+                      src="https://www.youtube.com/embed/YOUR_VIDEO_ID"
+                      title="Hur du konfigurerar talaridentifiering"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  </div>
+
+                  {/* Step by step instructions */}
+                  <div className="text-sm text-amber-900">
+                    <p className="font-medium mb-2">Steg för att aktivera:</p>
+                    <ol className="list-decimal list-inside space-y-1 text-sm">
+                      <li>
+                        <a href="https://huggingface.co/join" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                          Skapa gratis HuggingFace-konto
+                        </a>
+                      </li>
+                      <li>
+                        <a href="https://huggingface.co/settings/tokens" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                          Skapa en Access Token
+                        </a>
+                      </li>
+                      <li>
+                        <a href="https://huggingface.co/pyannote/speaker-diarization-3.1" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                          Acceptera pyannote-villkoren
+                        </a>
+                      </li>
+                      <li>Klistra in din token nedan</li>
+                    </ol>
+                  </div>
+
+                  {/* Token input */}
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-amber-900">
+                      Klistra in din HuggingFace-token:
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="password"
+                        value={hfTokenInput}
+                        onChange={(e) => setHfTokenInput(e.target.value)}
+                        placeholder="hf_xxxxxxxxxxxxxxxxxx"
+                        className="flex-1 px-3 py-2 border border-amber-300 rounded-lg text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => saveTokenMutation.mutate(hfTokenInput)}
+                        disabled={!hfTokenInput || saveTokenMutation.isPending}
+                        className="px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-medium hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {saveTokenMutation.isPending ? "Sparar..." : "Spara"}
+                      </button>
+                    </div>
+                    <p className="text-xs text-amber-700">
+                      Din token sparas endast lokalt på din dator och skickas aldrig någon annanstans.
+                    </p>
+                    {saveTokenMutation.isError && (
+                      <p className="text-xs text-red-600">
+                        Fel: {saveTokenMutation.error instanceof Error ? saveTokenMutation.error.message : "Kunde inte spara token"}
+                      </p>
+                    )}
+                    {saveTokenMutation.isSuccess && (
+                      <p className="text-xs text-green-600">
+                        Token sparad! Du kan nu använda talaridentifiering.
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Show configured status */}
+          {enableDiarization && hfTokenStatus?.configured && (
+            <div className="mt-2 ml-7 text-sm text-green-700">
+              Token konfigurerad: {hfTokenStatus.token_preview}
+            </div>
+          )}
         </div>
 
         {/* Anonymization toggle */}

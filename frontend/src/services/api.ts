@@ -243,3 +243,29 @@ export async function resetEdits(jobId: string): Promise<WordEditResponse> {
 export function getEditedAudioUrl(jobId: string): string {
   return `${getBaseUrl()}/api/v1/editor/${jobId}/download-edited-audio`;
 }
+
+// HF Token settings
+export interface HFTokenStatus {
+  configured: boolean;
+  token_preview: string | null;
+}
+
+export async function getHFTokenStatus(): Promise<HFTokenStatus> {
+  const response = await api.get<HFTokenStatus>("/settings/hf-token");
+  return response.data;
+}
+
+export async function saveHFToken(token: string): Promise<{ status: string; message: string }> {
+  const response = await api.post<{ status: string; message: string }>(
+    "/settings/hf-token",
+    { token }
+  );
+  return response.data;
+}
+
+export async function removeHFToken(): Promise<{ status: string; message: string }> {
+  const response = await api.delete<{ status: string; message: string }>(
+    "/settings/hf-token"
+  );
+  return response.data;
+}
