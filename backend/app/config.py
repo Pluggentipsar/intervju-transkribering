@@ -1,7 +1,21 @@
 """Application configuration."""
 
+import sys
 from pathlib import Path
+
 from pydantic_settings import BaseSettings
+
+
+def _get_base_dir() -> Path:
+    """Get base directory - works for both dev and PyInstaller frozen exe."""
+    if getattr(sys, "frozen", False):
+        # Running as PyInstaller exe: data dir is next to the exe
+        return Path(sys.executable).parent / "data"
+    # Development: relative to backend/
+    return Path.cwd()
+
+
+_base_dir = _get_base_dir()
 
 
 class Settings(BaseSettings):
@@ -12,9 +26,9 @@ class Settings(BaseSettings):
     debug: bool = False
 
     # Paths
-    upload_dir: Path = Path("uploads")
-    models_dir: Path = Path("models")
-    database_url: str = "sqlite+aiosqlite:///./transcription.db"
+    upload_dir: Path = _base_dir / "uploads"
+    models_dir: Path = _base_dir / "models"
+    database_url: str = f"sqlite+aiosqlite:///{_base_dir / 'transcription.db'}"
 
     # Whisper settings
     default_model: str = "KBLab/kb-whisper-small"
@@ -33,7 +47,7 @@ class Settings(BaseSettings):
     static_dir: Path = Path(__file__).parent.parent.parent / "frontend" / "out"
 
     class Config:
-        env_file = ".env"
+        env_file = str(_base_dir / ".env") if getattr(sys, "frozen", False) else ".env"
         env_file_encoding = "utf-8"
 
 
