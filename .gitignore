@@ -69,4 +69,15 @@ TystText-Distribution/
 TystText-Windows.zip
 build-exe/dist/
 build-exe/build/
+build-exe/python311/
+build-exe/python311.zip
+build-exe/get-pip.py
+build-exe/app/
 *.exe
+
+# Distribution backend (venv is large)
+dist-backend/venv/
+dist-backend/*.db
+dist-backend/uploads/
+dist-backend/models/
+dist-backend/config.txt

@@ -44,13 +44,40 @@ def _patch_torch_for_pyannote():
         pass
 
 
+def _get_hf_token() -> str | None:
+    """Get HF token from environment or config file."""
+    # Check environment variable first (set by settings API)
+    token = os.environ.get("HF_TOKEN")
+    if token:
+        return token
+
+    # Check settings (loaded from .env at startup)
+    if settings.hf_token:
+        return settings.hf_token
+
+    # Check config.txt file (saved by settings API)
+    config_path = Path(__file__).parent.parent.parent / "config.txt"
+    if config_path.exists():
+        try:
+            with open(config_path, "r", encoding="utf-8") as f:
+                for line in f:
+                    if line.strip().startswith("HF_TOKEN="):
+                        token = line.strip().split("=", 1)[1]
+                        if token and not token.startswith("#"):
+                            # Also set in environment for future use
+                            os.environ["HF_TOKEN"] = token
+                            return token
+        except Exception:
+            pass
+
+    return None
+
+
 def is_diarization_available() -> bool:
     """Check if diarization dependencies are installed and configured."""
     global _diarization_available
 
-    if _diarization_available is not None:
-        return _diarization_available
-
+    # Don't cache when token is missing - it might be configured later
     # Patch torch BEFORE importing pyannote
     _patch_torch_for_pyannote()
 
@@ -59,12 +86,12 @@ def is_diarization_available() -> bool:
         from pyannote.audio import Pipeline
 
         # Check if HuggingFace token is configured
-        if not settings.hf_token:
+        hf_token = _get_hf_token()
+        if not hf_token:
             logger.warning(
                 "HuggingFace token not configured. "
                 "Speaker diarization requires accepting pyannote terms and setting HF_TOKEN."
             )
-            _diarization_available = False
             return False
 
         _diarization_available = True
@@ -116,7 +143,7 @@ def add_speaker_labels(
             logger.info("Loading diarization model (first time, may take a while)...")
 
             _diarization_model = DiarizationPipeline(
-                use_auth_token=settings.hf_token,
+                use_auth_token=_get_hf_token(),
                 device=device,
             )
             logger.info("Diarization model loaded successfully")

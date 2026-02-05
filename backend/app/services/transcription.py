@@ -1,6 +1,8 @@
 """KB-Whisper transcription service using faster-whisper."""
 
 import logging
+import os
+import sys
 from pathlib import Path
 from typing import Callable, Iterator
 
@@ -11,9 +13,48 @@ except ImportError:
     WhisperModel = None  # type: ignore
     WHISPER_AVAILABLE = False
 
+try:
+    from huggingface_hub import snapshot_download
+    HF_HUB_AVAILABLE = True
+except ImportError:
+    snapshot_download = None  # type: ignore
+    HF_HUB_AVAILABLE = False
+
 from app.config import settings
 
 logger = logging.getLogger(__name__)
+
+
+def download_model_without_symlinks(model_id: str, download_dir: Path) -> str:
+    """
+    Download a model from HuggingFace Hub without using symlinks.
+    This is necessary on Windows where unprivileged users can't create symlinks.
+
+    Returns the path to the downloaded model directory.
+    """
+    if not HF_HUB_AVAILABLE:
+        raise RuntimeError("huggingface_hub is not installed")
+
+    # Create a sanitized directory name from model_id
+    safe_name = model_id.replace("/", "--")
+    local_dir = download_dir / safe_name
+
+    # Check if already downloaded
+    if local_dir.exists() and any(local_dir.iterdir()):
+        logger.info(f"Model already downloaded: {local_dir}")
+        return str(local_dir)
+
+    logger.info(f"Downloading model {model_id} to {local_dir} (without symlinks)")
+
+    # Download without symlinks - this copies files directly
+    snapshot_download(
+        repo_id=model_id,
+        local_dir=str(local_dir),
+        local_dir_use_symlinks=False,  # Critical: don't use symlinks on Windows
+    )
+
+    logger.info(f"Model downloaded successfully: {local_dir}")
+    return str(local_dir)
 
 # Cache for loaded models
 _model_cache: dict[str, WhisperModel] = {}
@@ -67,12 +108,22 @@ def get_model(model_id: str, device: str = "auto", compute_type: str = "auto") -
     if compute_type == "auto":
         compute_type = "float16" if device == "cuda" else "int8"
 
-    model = WhisperModel(
-        model_id,
-        device=device,
-        compute_type=compute_type,
-        download_root=str(settings.models_dir),
-    )
+    # On Windows frozen exe, download model without symlinks first
+    if getattr(sys, 'frozen', False) and HF_HUB_AVAILABLE:
+        model_path = download_model_without_symlinks(model_id, settings.models_dir)
+        model = WhisperModel(
+            model_path,  # Use local path instead of model_id
+            device=device,
+            compute_type=compute_type,
+        )
+    else:
+        # Normal mode - let faster_whisper handle download
+        model = WhisperModel(
+            model_id,
+            device=device,
+            compute_type=compute_type,
+            download_root=str(settings.models_dir),
+        )
 
     _model_cache[cache_key] = model
     logger.info(f"Model loaded successfully: {model_id}")

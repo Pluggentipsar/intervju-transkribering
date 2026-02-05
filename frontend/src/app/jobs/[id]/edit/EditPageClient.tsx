@@ -152,7 +152,25 @@ export default function AudioEditorPage() {
   const params = useParams();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const jobId = params.id as string;
+
+  // Get job ID from URL - handles static export where useParams might return "placeholder"
+  const [jobId, setJobId] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Extract ID from URL path: /jobs/{id}/edit
+    const pathParts = window.location.pathname.split('/');
+    const idIndex = pathParts.indexOf('jobs') + 1;
+    const urlJobId = pathParts[idIndex];
+
+    if (urlJobId && urlJobId !== 'placeholder') {
+      setJobId(urlJobId);
+    } else if (params.id && params.id !== 'placeholder') {
+      setJobId(params.id as string);
+    }
+  }, [params.id]);
+
+  // Valid when we have a real job ID
+  const isValidJobId = Boolean(jobId && jobId !== "placeholder");
 
   // Selection state
   const [selectedWordIds, setSelectedWordIds] = useState<Set<number>>(new Set());
@@ -169,10 +187,11 @@ export default function AudioEditorPage() {
   const [detectedSilences, setDetectedSilences] = useState<Array<{ start: number; end: number; duration: number }>>([]);
   const [waveformSelectedRegion, setWaveformSelectedRegion] = useState<{ start: number; end: number } | null>(null);
 
-  // Fetch editable transcript
+  // Fetch editable transcript (only if valid ID)
   const { data: transcript, isLoading, error } = useQuery({
     queryKey: ["editable-transcript", jobId],
-    queryFn: () => getEditableTranscript(jobId),
+    queryFn: () => getEditableTranscript(jobId!),  // jobId is guaranteed non-null when enabled
+    enabled: isValidJobId,
   });
 
   // Update word inclusion mutation
@@ -183,7 +202,7 @@ export default function AudioEditorPage() {
     }: {
       wordIds: number[];
       included: boolean;
-    }) => updateWordInclusion(jobId, wordIds, included),
+    }) => updateWordInclusion(jobId!, wordIds, included),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["editable-transcript", jobId] });
       setSelectedWordIds(new Set());
@@ -192,7 +211,7 @@ export default function AudioEditorPage() {
 
   // Reset edits mutation
   const resetMutation = useMutation({
-    mutationFn: () => resetEdits(jobId),
+    mutationFn: () => resetEdits(jobId!),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["editable-transcript", jobId] });
     },
@@ -417,7 +436,8 @@ export default function AudioEditorPage() {
     }
   }, []);
 
-  if (isLoading) {
+  // Show loading while waiting for valid job ID or fetching
+  if (!isValidJobId || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary-500" />
@@ -521,7 +541,7 @@ export default function AudioEditorPage() {
 
               {/* Download button - always visible in stats bar */}
               <a
-                href={getEditedAudioUrl(jobId)}
+                href={getEditedAudioUrl(jobId!)}
                 download
                 className={clsx(
                   "inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors",
@@ -543,7 +563,7 @@ export default function AudioEditorPage() {
         <div className="max-w-6xl mx-auto px-4 py-4">
           <audio
             ref={audioRef}
-            src={getAudioUrl(jobId)}
+            src={getAudioUrl(jobId!)}
             onTimeUpdate={handleTimeUpdate}
             onLoadedMetadata={handleLoadedMetadata}
             onEnded={() => setIsPlaying(false)}
@@ -601,7 +621,7 @@ export default function AudioEditorPage() {
           {showWaveform && duration > 0 && (
             <div className="mt-4">
               <AudioWaveform
-                audioUrl={getAudioUrl(jobId)}
+                audioUrl={getAudioUrl(jobId!)}
                 currentTime={currentTime}
                 duration={duration}
                 onSeek={seekToTime}

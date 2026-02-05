@@ -8,6 +8,7 @@ import sys
 # Fix Windows symlink issues with HuggingFace Hub
 # Must be set BEFORE importing any HF libraries
 os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
+os.environ["HF_HUB_DISABLE_SYMLINKS"] = "1"  # Actually disable symlinks, not just the warning
 
 # Set up the environment for the bundled app
 if getattr(sys, 'frozen', False):

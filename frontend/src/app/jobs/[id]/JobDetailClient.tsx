@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
@@ -69,21 +69,39 @@ export default function JobDetailClient() {
   const params = useParams();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const jobId = params.id as string;
 
-  // Poll job status when processing
-  const { data: job, isLoading: jobLoading } = useJobPolling(jobId);
+  // Get job ID from URL - handles static export where useParams might return "placeholder"
+  const [jobId, setJobId] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Extract ID from URL path: /jobs/{id}
+    const pathParts = window.location.pathname.split('/');
+    const idIndex = pathParts.indexOf('jobs') + 1;
+    const urlJobId = pathParts[idIndex];
+
+    if (urlJobId && urlJobId !== 'placeholder') {
+      setJobId(urlJobId);
+    } else if (params.id && params.id !== 'placeholder') {
+      setJobId(params.id as string);
+    }
+  }, [params.id]);
+
+  // Valid when we have a real job ID
+  const isValidJobId = Boolean(jobId && jobId !== "placeholder");
+
+  // Poll job status when processing (only if valid ID)
+  const { data: job, isLoading: jobLoading } = useJobPolling(isValidJobId ? jobId : null);
 
   // Fetch transcript when completed
   const { data: transcript, isLoading: transcriptLoading } = useQuery({
     queryKey: ["transcript", jobId],
-    queryFn: () => getTranscript(jobId),
+    queryFn: () => getTranscript(jobId!),
     enabled: job?.status === "completed",
   });
 
   // Mutation for running anonymization
   const anonymizationMutation = useMutation({
-    mutationFn: () => runAnonymization(jobId),
+    mutationFn: () => runAnonymization(jobId!),
     onSuccess: () => {
       // Refetch transcript to get anonymized text
       queryClient.invalidateQueries({ queryKey: ["transcript", jobId] });
@@ -93,7 +111,7 @@ export default function JobDetailClient() {
 
   // Mutation for cancelling job
   const cancelMutation = useMutation({
-    mutationFn: () => cancelJob(jobId),
+    mutationFn: () => cancelJob(jobId!),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["job", jobId] });
     },
@@ -161,7 +179,8 @@ export default function JobDetailClient() {
       .join("\n\n");
   }, [transcript, showAnonymized]);
 
-  if (jobLoading) {
+  // Show loading while waiting for valid job ID or fetching
+  if (!isValidJobId || jobLoading) {
     return (
       <div className="flex items-center justify-center py-12">
         <Loader2 className="w-8 h-8 animate-spin text-primary-500" />
@@ -212,7 +231,7 @@ export default function JobDetailClient() {
         {isComplete && (
           <div className="flex gap-2 flex-wrap">
             <a
-              href={getExportUrl(jobId, "txt", hasAnonymizedContent && showAnonymized)}
+              href={getExportUrl(jobId!, "txt", hasAnonymizedContent && showAnonymized)}
               download
               className="inline-flex items-center gap-2 px-3 py-2 bg-white border rounded-lg hover:bg-gray-50 transition-colors text-sm"
             >
@@ -220,7 +239,7 @@ export default function JobDetailClient() {
               Text
             </a>
             <a
-              href={getExportUrl(jobId, "md", hasAnonymizedContent && showAnonymized)}
+              href={getExportUrl(jobId!, "md", hasAnonymizedContent && showAnonymized)}
               download
               className="inline-flex items-center gap-2 px-3 py-2 bg-white border rounded-lg hover:bg-gray-50 transition-colors text-sm"
             >
@@ -228,7 +247,7 @@ export default function JobDetailClient() {
               Markdown
             </a>
             <a
-              href={getExportUrl(jobId, "srt", hasAnonymizedContent && showAnonymized)}
+              href={getExportUrl(jobId!, "srt", hasAnonymizedContent && showAnonymized)}
               download
               className="inline-flex items-center gap-2 px-3 py-2 bg-white border rounded-lg hover:bg-gray-50 transition-colors text-sm"
             >
@@ -236,7 +255,7 @@ export default function JobDetailClient() {
               SRT
             </a>
             <a
-              href={getExportUrl(jobId, "vtt", hasAnonymizedContent && showAnonymized)}
+              href={getExportUrl(jobId!, "vtt", hasAnonymizedContent && showAnonymized)}
               download
               className="inline-flex items-center gap-2 px-3 py-2 bg-white border rounded-lg hover:bg-gray-50 transition-colors text-sm"
             >
@@ -244,7 +263,7 @@ export default function JobDetailClient() {
               VTT
             </a>
             <a
-              href={getExportUrl(jobId, "json", hasAnonymizedContent && showAnonymized)}
+              href={getExportUrl(jobId!, "json", hasAnonymizedContent && showAnonymized)}
               download
               className="inline-flex items-center gap-2 px-3 py-2 bg-white border rounded-lg hover:bg-gray-50 transition-colors text-sm"
             >
@@ -366,7 +385,7 @@ export default function JobDetailClient() {
       {/* Speaker management panel */}
       {isComplete && transcript && transcript.metadata.speaker_count > 0 && (
         <SpeakerManager
-          jobId={jobId}
+          jobId={jobId!}
           segments={transcript.segments}
           className="mb-6"
         />
@@ -451,7 +470,7 @@ export default function JobDetailClient() {
       {/* Enhanced anonymization panel */}
       {isComplete && transcript && (
         <EnhancedAnonymization
-          jobId={jobId}
+          jobId={jobId!}
           hasNerAnonymization={transcript.segments.some(
             (s) => s.anonymized_text && s.anonymized_text !== s.text
           )}
@@ -480,7 +499,7 @@ export default function JobDetailClient() {
       {/* Audio player */}
       {isComplete && transcript && (
         <AudioPlayer
-          audioUrl={getAudioUrl(jobId)}
+          audioUrl={getAudioUrl(jobId!)}
           duration={job.duration_seconds ?? undefined}
           className="mb-6"
           onTimeUpdate={setCurrentAudioTime}
