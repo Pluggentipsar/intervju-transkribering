@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { clsx } from "clsx";
-import Link from "next/link";
 import {
   Shield,
   ShieldCheck,
@@ -15,10 +14,6 @@ import {
   Plus,
   Trash2,
   Info,
-  ArrowLeft,
-  Sparkles,
-  Lock,
-  FileText,
   ListPlus,
   X,
 } from "lucide-react";
@@ -147,55 +142,19 @@ export default function AnonymizePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Hero header */}
-      <div className="bg-gradient-to-br from-amber-900 via-amber-800 to-amber-700 text-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-24 pb-16">
-          {/* Back link */}
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 text-amber-200 hover:text-white mb-8 transition-colors group"
-          >
-            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-            Tillbaka till start
-          </Link>
-
-          {/* Header content */}
-          <div className="flex items-center gap-4 mb-6">
-            <div className="w-16 h-16 bg-gradient-to-br from-amber-400 to-amber-600 rounded-2xl flex items-center justify-center shadow-lg shadow-amber-500/25">
-              <Shield className="w-8 h-8 text-white" />
-            </div>
-            <div>
-              <h1 className="text-3xl md:text-4xl font-bold mb-2">
-                Avidentifiera text
-              </h1>
-              <p className="text-amber-200">
-                Anonymisera känslig information med KB-BERT NER
-              </p>
-            </div>
-          </div>
-
-          {/* Feature pills */}
-          <div className="flex flex-wrap gap-3 mt-8">
-            <div className="flex items-center gap-2 px-4 py-2 bg-white/10 border border-white/20 rounded-full text-sm text-amber-100">
-              <Sparkles className="w-4 h-4" />
-              AI-driven NER
-            </div>
-            <div className="flex items-center gap-2 px-4 py-2 bg-white/10 border border-white/20 rounded-full text-sm text-amber-100">
-              <Lock className="w-4 h-4" />
-              100% lokal
-            </div>
-            <div className="flex items-center gap-2 px-4 py-2 bg-white/10 border border-white/20 rounded-full text-sm text-amber-100">
-              <FileText className="w-4 h-4" />
-              Exportera resultat
-            </div>
-          </div>
-        </div>
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+      {/* Page header */}
+      <div className="mb-6">
+        <h1 className="text-xl font-bold text-gray-900 mb-1">
+          Avidentifiera text
+        </h1>
+        <p className="text-sm text-gray-500">
+          Anonymisera kanslig information med KB-BERT NER
+        </p>
       </div>
 
       {/* Main content */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 -mt-8 pb-16">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Input section */}
           <div className="space-y-6">
             {/* Text input card */}
@@ -578,6 +537,5 @@ export default function AnonymizePage() {
           </div>
         </div>
       </div>
-    </div>
   );
 }
