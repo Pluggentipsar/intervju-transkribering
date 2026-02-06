@@ -35,7 +35,7 @@ export function ModelSelector({
     return (
       <div className="animate-pulse space-y-3">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="h-20 bg-gray-200 rounded-lg" />
+          <div key={i} className="h-20 bg-dark-700 rounded-lg" />
         ))}
       </div>
     );
@@ -44,18 +44,18 @@ export function ModelSelector({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="font-medium text-gray-900">Välj modell</h3>
+        <h3 className="font-medium text-white">Välj modell</h3>
         {systemStatus && (
           <div className="flex items-center gap-1 text-sm">
             {systemStatus.gpu_available ? (
               <>
                 <Zap className="w-4 h-4 text-green-500" />
-                <span className="text-green-600">GPU tillgänglig</span>
+                <span className="text-green-400">GPU tillgänglig</span>
               </>
             ) : (
               <>
                 <Cpu className="w-4 h-4 text-orange-500" />
-                <span className="text-orange-600">Endast CPU</span>
+                <span className="text-orange-400">Endast CPU</span>
               </>
             )}
           </div>
@@ -94,24 +94,24 @@ function ModelCard({ model, selected, onSelect, disabled, gpuAvailable }: ModelC
       className={clsx(
         "w-full p-4 rounded-lg border-2 text-left transition-all",
         {
-          "border-primary-500 bg-primary-50": selected,
-          "border-gray-200 hover:border-gray-300 hover:bg-gray-50": !selected && !disabled,
-          "border-gray-200 bg-gray-100 cursor-not-allowed opacity-60": disabled,
+          "border-primary-500 bg-primary-500/10": selected,
+          "border-white/10 hover:border-white/20 hover:bg-white/5": !selected && !disabled,
+          "border-white/10 bg-dark-700 cursor-not-allowed opacity-60": disabled,
         }
       )}
     >
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <div className="flex items-center gap-2">
-            <span className="font-medium text-gray-900">{model.name}</span>
+            <span className="font-medium text-white">{model.name}</span>
             {model.recommended && (
-              <span className="px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-full">
+              <span className="px-2 py-0.5 text-xs font-medium bg-green-500/10 text-green-400 rounded-full">
                 Rekommenderas
               </span>
             )}
           </div>
-          <p className="text-sm text-gray-500 mt-1">{model.description}</p>
-          <p className="text-xs text-gray-400 mt-2">
+          <p className="text-sm text-gray-400 mt-1">{model.description}</p>
+          <p className="text-xs text-gray-500 mt-2">
             Storlek: ~{model.size_mb} MB
           </p>
         </div>

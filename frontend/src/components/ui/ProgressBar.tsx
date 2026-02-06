@@ -75,7 +75,7 @@ export function ProgressBar({
   if (variant === "minimal") {
     return (
       <div className={clsx("w-full", className)}>
-        <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+        <div className="w-full bg-dark-800 rounded-full h-1.5 overflow-hidden">
           <div
             className="h-full rounded-full bg-gradient-to-r from-primary-500 to-primary-600 transition-all duration-500 ease-out"
             style={{ width: `${clampedProgress}%` }}
@@ -101,7 +101,7 @@ export function ProgressBar({
                   <div
                     className={clsx(
                       "absolute h-0.5 -translate-y-3",
-                      isCompleted ? "bg-primary-500" : "bg-gray-200"
+                      isCompleted ? "bg-primary-500" : "bg-dark-700"
                     )}
                     style={{
                       width: `calc(100% / ${steps.length} - 24px)`,
@@ -117,8 +117,8 @@ export function ProgressBar({
                     isCompleted
                       ? "bg-primary-500 text-white"
                       : isActive
-                        ? "bg-primary-100 text-primary-700 ring-4 ring-primary-100"
-                        : "bg-gray-100 text-gray-400"
+                        ? "bg-primary-500/20 text-primary-400 ring-4 ring-primary-500/10"
+                        : "bg-dark-700 text-gray-500"
                   )}
                 >
                   {isCompleted ? (
@@ -134,7 +134,7 @@ export function ProgressBar({
                 <span
                   className={clsx(
                     "mt-2 text-xs font-medium transition-colors",
-                    isActive ? "text-primary-700" : isCompleted ? "text-primary-600" : "text-gray-400"
+                    isActive ? "text-primary-400" : isCompleted ? "text-primary-500" : "text-gray-500"
                   )}
                 >
                   {step.label}
@@ -146,7 +146,7 @@ export function ProgressBar({
 
         {/* Progress bar */}
         <div className="relative">
-          <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
+          <div className="w-full bg-dark-800 rounded-full h-3 overflow-hidden">
             <div
               className={clsx(
                 "h-full rounded-full transition-all duration-500 ease-out relative overflow-hidden",
@@ -161,11 +161,11 @@ export function ProgressBar({
           {/* Percentage label */}
           {showLabel && (
             <div className="flex items-center justify-between mt-2">
-              <span className="text-sm font-semibold text-primary-700">
+              <span className="text-sm font-semibold text-primary-400">
                 {Math.round(clampedProgress)}%
               </span>
               {stepLabel && (
-                <span className="text-sm text-gray-600">{stepLabel}</span>
+                <span className="text-sm text-gray-400">{stepLabel}</span>
               )}
             </div>
           )}
@@ -179,7 +179,7 @@ export function ProgressBar({
     <div className={clsx("w-full", className)}>
       {/* Progress bar */}
       <div className="relative">
-        <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
+        <div className="w-full bg-dark-800 rounded-full h-2.5 overflow-hidden">
           <div
             className={clsx(
               "h-full rounded-full transition-all duration-500 ease-out relative overflow-hidden",
@@ -194,11 +194,11 @@ export function ProgressBar({
         {/* Label */}
         {showLabel && (
           <div className="flex items-center justify-between mt-1.5">
-            <span className="text-sm font-medium text-gray-700">
+            <span className="text-sm font-medium text-gray-300">
               {Math.round(clampedProgress)}%
             </span>
             {stepLabel && (
-              <span className="text-sm text-gray-500">{stepLabel}</span>
+              <span className="text-sm text-gray-400">{stepLabel}</span>
             )}
           </div>
         )}
@@ -213,7 +213,7 @@ export function ProgressBar({
 export function IndeterminateProgress({ className }: { className?: string }) {
   return (
     <div className={clsx("w-full", className)}>
-      <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+      <div className="w-full bg-dark-800 rounded-full h-2 overflow-hidden">
         <div className="h-full w-1/3 bg-gradient-to-r from-primary-400 via-primary-500 to-primary-400 rounded-full animate-indeterminate" />
       </div>
     </div>

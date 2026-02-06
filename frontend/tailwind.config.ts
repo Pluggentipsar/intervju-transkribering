@@ -41,6 +41,10 @@ const config: Config = {
       fontFamily: {
         sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
       },
+      boxShadow: {
+        'glow': '0 0 20px rgba(20, 184, 166, 0.15)',
+        'glow-lg': '0 0 40px rgba(20, 184, 166, 0.2)',
+      },
       animation: {
         'wave': 'wave 1s ease-in-out infinite',
         'fade-in': 'fadeIn 0.6s ease-out forwards',

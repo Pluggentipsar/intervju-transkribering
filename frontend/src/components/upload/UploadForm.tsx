@@ -114,13 +114,13 @@ export function UploadForm() {
   const progress = job?.progress || uploadProgress;
 
   return (
-    <form onSubmit={handleSubmit} className="divide-y divide-gray-100">
+    <form onSubmit={handleSubmit} className="divide-y divide-white/5">
       {/* File Upload */}
       <div className="p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-1">
+        <h2 className="text-lg font-semibold text-white mb-1">
           1. Välj ljudfil
         </h2>
-        <p className="text-sm text-gray-500 mb-4">
+        <p className="text-sm text-gray-400 mb-4">
           Dra och släpp eller klicka för att välja fil
         </p>
         <FileDropzone
@@ -133,10 +133,10 @@ export function UploadForm() {
 
       {/* Model Selection */}
       <div className="p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-1">
+        <h2 className="text-lg font-semibold text-white mb-1">
           2. Välj inställningar
         </h2>
-        <p className="text-sm text-gray-500 mb-4">
+        <p className="text-sm text-gray-400 mb-4">
           Anpassa transkriberingen efter dina behov
         </p>
         <ModelSelector
@@ -146,18 +146,18 @@ export function UploadForm() {
         />
 
         {/* Diarization toggle */}
-        <div className="mt-4 pt-4 border-t">
+        <div className="mt-4 pt-4 border-t border-white/10">
           <label className="flex items-center gap-3 cursor-pointer">
             <input
               type="checkbox"
               checked={enableDiarization}
               onChange={(e) => setEnableDiarization(e.target.checked)}
               disabled={isProcessing}
-              className="w-4 h-4 text-primary-600 rounded border-gray-300 focus:ring-primary-500"
+              className="w-4 h-4 text-primary-600 rounded border-white/20 focus:ring-primary-500"
             />
             <div>
-              <span className="font-medium text-gray-900">Talaridentifiering</span>
-              <p className="text-sm text-gray-500">
+              <span className="font-medium text-white">Talaridentifiering</span>
+              <p className="text-sm text-gray-400">
                 Identifiera olika talare i intervjun (kräver HuggingFace-konto)
               </p>
             </div>
@@ -165,18 +165,18 @@ export function UploadForm() {
         </div>
 
         {/* Anonymization toggle */}
-        <div className="mt-4 pt-4 border-t">
+        <div className="mt-4 pt-4 border-t border-white/10">
           <label className="flex items-center gap-3 cursor-pointer">
             <input
               type="checkbox"
               checked={enableAnonymization}
               onChange={(e) => setEnableAnonymization(e.target.checked)}
               disabled={isProcessing}
-              className="w-4 h-4 text-primary-600 rounded border-gray-300 focus:ring-primary-500"
+              className="w-4 h-4 text-primary-600 rounded border-white/20 focus:ring-primary-500"
             />
             <div>
-              <span className="font-medium text-gray-900">Avidentifiering</span>
-              <p className="text-sm text-gray-500">
+              <span className="font-medium text-white">Avidentifiering</span>
+              <p className="text-sm text-gray-400">
                 Ta bort känslig information (namn, platser, organisationer)
               </p>
             </div>
@@ -184,8 +184,8 @@ export function UploadForm() {
 
           {/* NER Entity Type Selection */}
           {enableAnonymization && (
-            <div className="mt-3 ml-7 pl-3 border-l-2 border-blue-200 space-y-1">
-              <p className="text-xs text-gray-500 mb-2">Välj vilka typer som ska avidentifieras:</p>
+            <div className="mt-3 ml-7 pl-3 border-l-2 border-blue-500/20 space-y-1">
+              <p className="text-xs text-gray-400 mb-2">Välj vilka typer som ska avidentifieras:</p>
               {[
                 { key: "persons" as const, label: "Personnamn", desc: "Namn på personer" },
                 { key: "locations" as const, label: "Platser", desc: "Geografiska platser" },
@@ -195,7 +195,7 @@ export function UploadForm() {
               ].map((item) => (
                 <label
                   key={item.key}
-                  className="flex items-center gap-2 p-2 rounded hover:bg-blue-50 cursor-pointer"
+                  className="flex items-center gap-2 p-2 rounded hover:bg-blue-500/5 cursor-pointer"
                 >
                   <input
                     type="checkbox"
@@ -205,7 +205,7 @@ export function UploadForm() {
                     className="w-3.5 h-3.5 text-blue-600 rounded"
                   />
                   <span className="text-sm">{item.label}</span>
-                  <span className="text-xs text-gray-400">- {item.desc}</span>
+                  <span className="text-xs text-gray-500">- {item.desc}</span>
                 </label>
               ))}
             </div>
@@ -215,13 +215,13 @@ export function UploadForm() {
 
       {/* Progress / Status */}
       {(isProcessing || isComplete || isFailed) && (
-        <div className="p-6 bg-gray-50">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+        <div className="p-6 bg-dark-900/50">
+          <h2 className="text-lg font-semibold text-white mb-4">
             3. Status
           </h2>
 
           {currentStep && (
-            <p className="text-sm text-gray-600 mb-2">
+            <p className="text-sm text-gray-400 mb-2">
               {STEP_LABELS[currentStep] || currentStep}
             </p>
           )}
@@ -229,12 +229,12 @@ export function UploadForm() {
           <ProgressBar progress={progress} />
 
           {isFailed && (
-            <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-red-700 font-medium">
+            <div className="mt-4 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
+              <p className="text-red-400 font-medium">
                 Transkriberingen misslyckades
               </p>
               {job?.error_message && (
-                <p className="text-sm text-red-600 mt-1">{job.error_message}</p>
+                <p className="text-sm text-red-400 mt-1">{job.error_message}</p>
               )}
             </div>
           )}
@@ -242,7 +242,7 @@ export function UploadForm() {
       )}
 
       {/* Actions */}
-      <div className="p-6 bg-gradient-to-r from-gray-50 to-white flex gap-3">
+      <div className="p-6 bg-gradient-to-r from-dark-900/50 to-transparent flex gap-3">
         {!isProcessing && !isComplete && (
           <Button
             type="submit"
@@ -268,15 +268,15 @@ export function UploadForm() {
         )}
 
         {isProcessing && (
-          <div className="flex-1 text-center py-3 text-gray-500">
+          <div className="flex-1 text-center py-3 text-gray-400">
             Bearbetar... Stäng inte webbläsaren.
           </div>
         )}
       </div>
 
       {uploadMutation.isError && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-red-700">
+        <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
+          <p className="text-red-400">
             {uploadMutation.error instanceof Error
               ? uploadMutation.error.message
               : "Ett fel uppstod"}

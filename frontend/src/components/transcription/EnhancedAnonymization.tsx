@@ -219,26 +219,26 @@ export function EnhancedAnonymization({
   };
 
   return (
-    <div className={clsx("bg-white rounded-xl border", className)}>
+    <div className={clsx("bg-dark-800/50 rounded-xl border border-white/10", className)}>
       {/* Header - always visible */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors rounded-xl"
+        className="w-full flex items-center justify-between p-4 hover:bg-white/5 transition-colors rounded-xl"
       >
         <div className="flex items-center gap-3">
-          <ShieldPlus className="w-5 h-5 text-amber-600" />
+          <ShieldPlus className="w-5 h-5 text-amber-400" />
           <div className="text-left">
-            <h3 className="font-medium text-gray-900">
+            <h3 className="font-medium text-white">
               Förstärk avidentifiering
             </h3>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-400">
               Extra skydd för GDPR - fånga skolor, sjukhus, personnummer mm.
             </p>
           </div>
         </div>
         <svg
           className={clsx(
-            "w-5 h-5 text-gray-400 transition-transform",
+            "w-5 h-5 text-gray-500 transition-transform",
             isExpanded && "rotate-180"
           )}
           fill="none"
@@ -256,13 +256,13 @@ export function EnhancedAnonymization({
 
       {/* Expanded content */}
       {isExpanded && (
-        <div className="px-4 pb-4 border-t">
+        <div className="px-4 pb-4 border-t border-white/10">
           {/* Options */}
           <div className="py-4 space-y-4">
             {/* Source field */}
             {hasNerAnonymization && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
                   Källtext
                 </label>
                 <div className="flex gap-4">
@@ -292,7 +292,7 @@ export function EnhancedAnonymization({
 
             {/* Pattern toggles */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+              <label className="flex items-center gap-3 p-3 border border-white/10 rounded-lg cursor-pointer hover:bg-white/5">
                 <input
                   type="checkbox"
                   checked={useInstitutionPatterns}
@@ -300,14 +300,14 @@ export function EnhancedAnonymization({
                   className="w-4 h-4 text-primary-600 rounded"
                 />
                 <div>
-                  <p className="font-medium text-sm">Institutionsmönster</p>
-                  <p className="text-xs text-gray-500">
+                  <p className="font-medium text-sm text-white">Institutionsmönster</p>
+                  <p className="text-xs text-gray-400">
                     Skolor, sjukhus, kommuner, företag, adresser
                   </p>
                 </div>
               </label>
 
-              <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+              <label className="flex items-center gap-3 p-3 border border-white/10 rounded-lg cursor-pointer hover:bg-white/5">
                 <input
                   type="checkbox"
                   checked={useFormatPatterns}
@@ -315,8 +315,8 @@ export function EnhancedAnonymization({
                   className="w-4 h-4 text-primary-600 rounded"
                 />
                 <div>
-                  <p className="font-medium text-sm">Formatmönster</p>
-                  <p className="text-xs text-gray-500">
+                  <p className="font-medium text-sm text-white">Formatmönster</p>
+                  <p className="text-xs text-gray-400">
                     Personnummer, telefon, e-post, postnummer
                   </p>
                 </div>
@@ -326,13 +326,13 @@ export function EnhancedAnonymization({
             {/* Custom words */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="block text-sm font-medium text-gray-300">
                   Egna ord att ersätta
                 </label>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setShowTemplates(!showTemplates)}
-                    className="text-xs text-primary-600 hover:text-primary-700 flex items-center gap-1"
+                    className="text-xs text-primary-400 hover:text-primary-400 flex items-center gap-1"
                   >
                     <FolderOpen className="w-3.5 h-3.5" />
                     Mallar
@@ -340,7 +340,7 @@ export function EnhancedAnonymization({
                   {customWords.length > 0 && (
                     <button
                       onClick={() => setShowSaveDialog(true)}
-                      className="text-xs text-green-600 hover:text-green-700 flex items-center gap-1"
+                      className="text-xs text-green-400 hover:text-green-400 flex items-center gap-1"
                     >
                       <Save className="w-3.5 h-3.5" />
                       Spara som mall
@@ -348,7 +348,7 @@ export function EnhancedAnonymization({
                   )}
                   <button
                     onClick={() => setShowBulkImport(!showBulkImport)}
-                    className="text-xs text-primary-600 hover:text-primary-700 flex items-center gap-1"
+                    className="text-xs text-primary-400 hover:text-primary-400 flex items-center gap-1"
                   >
                     <ListPlus className="w-3.5 h-3.5" />
                     {showBulkImport ? "Dölj" : "Bulk"}
@@ -358,14 +358,14 @@ export function EnhancedAnonymization({
 
               {/* Template picker */}
               {showTemplates && (
-                <div className="mb-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                <div className="mb-3 p-3 bg-blue-500/10 rounded-lg border border-blue-500/20">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-medium text-blue-700">
+                    <span className="text-xs font-medium text-blue-300">
                       Sparade mallar
                     </span>
                     <button
                       onClick={() => setShowTemplates(false)}
-                      className="text-blue-400 hover:text-blue-600"
+                      className="text-blue-400 hover:text-blue-300"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -375,27 +375,27 @@ export function EnhancedAnonymization({
                       {templatesData.templates.map((template) => (
                         <div
                           key={template.id}
-                          className="flex items-center justify-between p-2 bg-white rounded border hover:border-blue-300 transition-colors"
+                          className="flex items-center justify-between p-2 bg-dark-800/50 rounded border border-white/10 hover:border-blue-500/20 transition-colors"
                         >
                           <button
                             onClick={() => handleLoadTemplate(template)}
                             className="flex-1 text-left"
                           >
-                            <span className="text-sm font-medium text-gray-900">
+                            <span className="text-sm font-medium text-white">
                               {template.name}
                             </span>
-                            <span className="text-xs text-gray-500 ml-2">
+                            <span className="text-xs text-gray-400 ml-2">
                               ({template.words.length} ord)
                             </span>
                             {template.description && (
-                              <p className="text-xs text-gray-500 truncate">
+                              <p className="text-xs text-gray-400 truncate">
                                 {template.description}
                               </p>
                             )}
                           </button>
                           <button
                             onClick={() => deleteTemplateMutation.mutate(template.id)}
-                            className="p-1 text-gray-400 hover:text-red-500 ml-2"
+                            className="p-1 text-gray-500 hover:text-red-400 ml-2"
                             title="Ta bort mall"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -404,7 +404,7 @@ export function EnhancedAnonymization({
                       ))}
                     </div>
                   ) : (
-                    <p className="text-xs text-blue-600 text-center py-2">
+                    <p className="text-xs text-blue-400 text-center py-2">
                       Inga sparade mallar än. Lägg till ord och spara som mall.
                     </p>
                   )}
@@ -413,14 +413,14 @@ export function EnhancedAnonymization({
 
               {/* Save template dialog */}
               {showSaveDialog && (
-                <div className="mb-3 p-3 bg-green-50 rounded-lg border border-green-200">
+                <div className="mb-3 p-3 bg-green-500/10 rounded-lg border border-green-500/20">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-medium text-green-700">
+                    <span className="text-xs font-medium text-green-400">
                       Spara som mall
                     </span>
                     <button
                       onClick={() => setShowSaveDialog(false)}
-                      className="text-green-400 hover:text-green-600"
+                      className="text-green-400 hover:text-green-300"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -430,27 +430,27 @@ export function EnhancedAnonymization({
                     placeholder="Mallnamn (t.ex. Kommun X)"
                     value={templateName}
                     onChange={(e) => setTemplateName(e.target.value)}
-                    className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 mb-2"
+                    className="w-full px-3 py-2 bg-dark-800 border border-white/20 rounded-lg text-sm text-white focus:ring-2 focus:ring-green-500 focus:border-green-500 mb-2"
                   />
                   <input
                     type="text"
                     placeholder="Beskrivning (valfritt)"
                     value={templateDescription}
                     onChange={(e) => setTemplateDescription(e.target.value)}
-                    className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 mb-2"
+                    className="w-full px-3 py-2 bg-dark-800 border border-white/20 rounded-lg text-sm text-white focus:ring-2 focus:ring-green-500 focus:border-green-500 mb-2"
                   />
                   <Button
                     variant="secondary"
                     size="sm"
                     onClick={handleSaveTemplate}
                     disabled={!templateName.trim() || saveTemplateMutation.isPending}
-                    className="w-full bg-green-100 hover:bg-green-200 text-green-700 border-green-200"
+                    className="w-full bg-green-500/10 hover:bg-green-500/20 text-green-400 border-green-500/20"
                   >
                     <Save className="w-4 h-4 mr-1" />
                     {saveTemplateMutation.isPending ? "Sparar..." : `Spara ${customWords.length} ord`}
                   </Button>
                   {saveTemplateMutation.isError && (
-                    <p className="text-xs text-red-600 mt-1">
+                    <p className="text-xs text-red-400 mt-1">
                       {saveTemplateMutation.error instanceof Error
                         ? saveTemplateMutation.error.message
                         : "Kunde inte spara mallen"}
@@ -461,14 +461,14 @@ export function EnhancedAnonymization({
 
               {/* Bulk import section */}
               {showBulkImport && (
-                <div className="mb-3 p-3 bg-gray-50 rounded-lg border">
+                <div className="mb-3 p-3 bg-dark-900/50 rounded-lg border border-white/10">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-medium text-gray-600">
+                    <span className="text-xs font-medium text-gray-400">
                       Klistra in flera ord
                     </span>
                     <button
                       onClick={() => setShowBulkImport(false)}
-                      className="text-gray-400 hover:text-gray-600"
+                      className="text-gray-500 hover:text-gray-300"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -477,9 +477,9 @@ export function EnhancedAnonymization({
                     value={bulkText}
                     onChange={(e) => setBulkText(e.target.value)}
                     placeholder={"Kalle:[PERSON 1]\nLisa:[PERSON 2]\nStockholm:[STAD]"}
-                    className="w-full h-24 px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 resize-none font-mono"
+                    className="w-full h-24 px-3 py-2 bg-dark-800 border border-white/20 rounded-lg text-sm text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 resize-none font-mono"
                   />
-                  <p className="text-xs text-gray-500 mt-1 mb-2">
+                  <p className="text-xs text-gray-400 mt-1 mb-2">
                     Format: ord:ersättning (ett per rad, eller separera med komma/semikolon)
                   </p>
                   <Button
@@ -502,14 +502,14 @@ export function EnhancedAnonymization({
                   placeholder="Ord (t.ex. Kalle)"
                   value={newWord}
                   onChange={(e) => setNewWord(e.target.value)}
-                  className="flex-1 px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  className="flex-1 px-3 py-2 bg-dark-800 border border-white/20 rounded-lg text-sm text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                 />
                 <input
                   type="text"
                   placeholder="Ersättning (t.ex. [PERSON 3])"
                   value={newReplacement}
                   onChange={(e) => setNewReplacement(e.target.value)}
-                  className="flex-1 px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  className="flex-1 px-3 py-2 bg-dark-800 border border-white/20 rounded-lg text-sm text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       e.preventDefault();
@@ -532,16 +532,16 @@ export function EnhancedAnonymization({
                   {customWords.map((item, index) => (
                     <div
                       key={index}
-                      className="flex items-center justify-between px-3 py-2 bg-gray-50 rounded-lg text-sm"
+                      className="flex items-center justify-between px-3 py-2 bg-dark-900/50 rounded-lg text-sm"
                     >
                       <span>
                         <span className="font-medium">{item.word}</span>
                         {" → "}
-                        <span className="text-amber-700">{item.replacement}</span>
+                        <span className="text-amber-400">{item.replacement}</span>
                       </span>
                       <button
                         onClick={() => handleRemoveWord(index)}
-                        className="text-gray-400 hover:text-red-500"
+                        className="text-gray-500 hover:text-red-400"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -563,7 +563,7 @@ export function EnhancedAnonymization({
 
             {/* Error */}
             {mutation.isError && (
-              <div className="flex items-center gap-2 p-3 bg-red-50 text-red-700 rounded-lg text-sm">
+              <div className="flex items-center gap-2 p-3 bg-red-500/10 text-red-400 rounded-lg text-sm">
                 <AlertCircle className="w-4 h-4 flex-shrink-0" />
                 <span>
                   Något gick fel:{" "}
@@ -578,7 +578,7 @@ export function EnhancedAnonymization({
             {result && (
               <div className="space-y-4">
                 {/* Summary */}
-                <div className="flex items-center gap-2 p-3 bg-green-50 text-green-700 rounded-lg text-sm">
+                <div className="flex items-center gap-2 p-3 bg-green-500/10 text-green-400 rounded-lg text-sm">
                   <CheckCircle className="w-4 h-4 flex-shrink-0" />
                   <span>
                     Klart! {result.changes_count} av {result.segments.length}{" "}
@@ -590,7 +590,7 @@ export function EnhancedAnonymization({
                 <div className="flex gap-2">
                   <Button variant="secondary" size="sm" onClick={handleCopy}>
                     {copied ? (
-                      <CheckCircle className="w-4 h-4 mr-2 text-green-600" />
+                      <CheckCircle className="w-4 h-4 mr-2 text-green-400" />
                     ) : (
                       <Copy className="w-4 h-4 mr-2" />
                     )}
@@ -604,25 +604,25 @@ export function EnhancedAnonymization({
 
                 {/* Preview */}
                 <div>
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">
+                  <h4 className="text-sm font-medium text-gray-300 mb-2">
                     Förhandsvisning
                   </h4>
-                  <div className="max-h-[300px] overflow-y-auto border rounded-lg">
+                  <div className="max-h-[300px] overflow-y-auto border border-white/10 rounded-lg">
                     {result.segments.map((segment) => (
                       <div
                         key={segment.segment_index}
-                        className="p-3 border-b last:border-b-0 hover:bg-gray-50"
+                        className="p-3 border-b border-white/10 last:border-b-0 hover:bg-white/5"
                       >
                         <div className="flex items-start gap-3">
-                          <span className="text-xs text-gray-400 font-mono whitespace-nowrap pt-0.5">
+                          <span className="text-xs text-gray-500 font-mono whitespace-nowrap pt-0.5">
                             {formatTimestamp(segment.start_time)}
                           </span>
                           {segment.speaker && (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-500/10 text-blue-300 border border-blue-500/20">
                               {segment.speaker}
                             </span>
                           )}
-                          <p className="flex-1 text-sm text-gray-800 leading-relaxed">
+                          <p className="flex-1 text-sm text-gray-200 leading-relaxed">
                             {segment.enhanced_anonymized_text || segment.text}
                           </p>
                         </div>

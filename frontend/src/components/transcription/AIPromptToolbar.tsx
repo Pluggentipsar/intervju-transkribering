@@ -213,9 +213,9 @@ TRANSKRIPTION:
 ];
 
 const AI_LINKS = [
-  { name: "Copilot", url: "https://copilot.microsoft.com/", color: "text-blue-600" },
-  { name: "ChatGPT", url: "https://chat.openai.com/", color: "text-green-600" },
-  { name: "Claude", url: "https://claude.ai/", color: "text-orange-600" },
+  { name: "Copilot", url: "https://copilot.microsoft.com/", color: "text-blue-400" },
+  { name: "ChatGPT", url: "https://chat.openai.com/", color: "text-green-400" },
+  { name: "Claude", url: "https://claude.ai/", color: "text-orange-400" },
 ];
 
 interface AIPromptToolbarProps {
@@ -246,12 +246,12 @@ export function AIPromptToolbar({ transcriptText, className }: AIPromptToolbarPr
     <div className={clsx("fixed bottom-6 right-6 z-50", className)}>
       {/* Success message with AI links */}
       {showLinks && copiedId && (
-        <div className="absolute bottom-20 right-0 w-72 bg-white rounded-2xl shadow-2xl border p-4 animate-slide-up">
-          <div className="flex items-center gap-2 text-green-600 mb-3">
+        <div className="absolute bottom-20 right-0 w-72 bg-dark-800/50 rounded-2xl shadow-2xl border border-white/10 p-4 animate-slide-up">
+          <div className="flex items-center gap-2 text-green-400 mb-3">
             <Check className="w-5 h-5" />
             <span className="font-medium">Kopierat till urklipp!</span>
           </div>
-          <p className="text-sm text-gray-600 mb-3">
+          <p className="text-sm text-gray-400 mb-3">
             Klistra in i din AI-assistent:
           </p>
           <div className="flex gap-2">
@@ -262,7 +262,7 @@ export function AIPromptToolbar({ transcriptText, className }: AIPromptToolbarPr
                 target="_blank"
                 rel="noopener noreferrer"
                 className={clsx(
-                  "flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded-lg border text-sm font-medium transition-colors hover:bg-gray-50",
+                  "flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded-lg border border-white/10 text-sm font-medium transition-colors hover:bg-white/5",
                   link.color
                 )}
               >
@@ -273,7 +273,7 @@ export function AIPromptToolbar({ transcriptText, className }: AIPromptToolbarPr
           </div>
           <button
             onClick={() => setShowLinks(false)}
-            className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
+            className="absolute top-2 right-2 text-gray-500 hover:text-gray-300"
           >
             <X className="w-4 h-4" />
           </button>
@@ -282,21 +282,21 @@ export function AIPromptToolbar({ transcriptText, className }: AIPromptToolbarPr
 
       {/* Expanded button grid */}
       {isExpanded && (
-        <div className="absolute bottom-20 right-0 w-[420px] bg-white rounded-2xl shadow-2xl border p-6 animate-slide-up">
+        <div className="absolute bottom-20 right-0 w-[420px] bg-dark-800/50 rounded-2xl shadow-2xl border border-white/10 p-6 animate-slide-up">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+            <h3 className="text-lg font-semibold text-white flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-primary-500" />
               AI-verktyg
             </h3>
             <button
               onClick={() => setIsExpanded(false)}
-              className="text-gray-400 hover:text-gray-600 p-1"
+              className="text-gray-500 hover:text-gray-300 p-1"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
 
-          <p className="text-sm text-gray-500 mb-5">
+          <p className="text-sm text-gray-400 mb-5">
             Kopiera transkriptet med en färdig prompt, klistra sedan in i din AI-assistent.
           </p>
 
@@ -327,8 +327,8 @@ export function AIPromptToolbar({ transcriptText, className }: AIPromptToolbarPr
             ))}
           </div>
 
-          <div className="mt-5 pt-4 border-t flex items-center justify-between">
-            <p className="text-xs text-gray-400">
+          <div className="mt-5 pt-4 border-t border-white/10 flex items-center justify-between">
+            <p className="text-xs text-gray-500">
               💡 Öppna AI-assistenten i en ny flik först
             </p>
             <div className="flex gap-2">
@@ -338,7 +338,7 @@ export function AIPromptToolbar({ transcriptText, className }: AIPromptToolbarPr
                   href={link.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-xs text-gray-500 hover:text-gray-700 underline"
+                  className="text-xs text-gray-400 hover:text-gray-300 underline"
                 >
                   {link.name}
                 </a>

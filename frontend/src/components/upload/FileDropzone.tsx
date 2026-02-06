@@ -121,15 +121,15 @@ export function FileDropzone({
 
   if (selectedFile) {
     return (
-      <div className="border-2 border-primary-200 bg-primary-50 rounded-lg p-6">
+      <div className="border-2 border-primary-500/20 bg-primary-500/10 rounded-lg p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-primary-100 rounded-lg">
-              <File className="w-6 h-6 text-primary-600" />
+            <div className="p-2 bg-primary-500/20 rounded-lg">
+              <File className="w-6 h-6 text-primary-400" />
             </div>
             <div>
-              <p className="font-medium text-gray-900">{selectedFile.name}</p>
-              <p className="text-sm text-gray-500">
+              <p className="font-medium text-white">{selectedFile.name}</p>
+              <p className="text-sm text-gray-400">
                 {formatFileSize(selectedFile.size)}
                 {duration > 0 && ` · ${formatTime(duration)}`}
               </p>
@@ -138,17 +138,17 @@ export function FileDropzone({
           {!disabled && (
             <button
               onClick={onClear}
-              className="p-1 hover:bg-primary-100 rounded transition-colors"
+              className="p-1 hover:bg-primary-500/20 rounded transition-colors"
               aria-label="Ta bort fil"
             >
-              <X className="w-5 h-5 text-gray-500" />
+              <X className="w-5 h-5 text-gray-400" />
             </button>
           )}
         </div>
 
         {/* Audio preview player */}
         {audioUrl && (
-          <div className="bg-white rounded-lg p-3 border border-primary-200">
+          <div className="bg-dark-800 rounded-lg p-3 border border-primary-500/20">
             <audio
               ref={audioRef}
               src={audioUrl}
@@ -177,17 +177,17 @@ export function FileDropzone({
                   max={duration || 0}
                   value={currentTime}
                   onChange={handleSeek}
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary-500"
+                  className="w-full h-2 bg-dark-700 rounded-lg appearance-none cursor-pointer accent-primary-500"
                 />
-                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                <div className="flex justify-between text-xs text-gray-400 mt-1">
                   <span>{formatTime(currentTime)}</span>
                   <span>{formatTime(duration)}</span>
                 </div>
               </div>
 
-              <Volume2 className="w-4 h-4 text-gray-400" />
+              <Volume2 className="w-4 h-4 text-gray-500" />
             </div>
-            <p className="text-xs text-gray-500 mt-2 text-center">
+            <p className="text-xs text-gray-400 mt-2 text-center">
               Förhandslyssna för att bekräfta att det är rätt fil
             </p>
           </div>
@@ -202,36 +202,36 @@ export function FileDropzone({
       className={clsx(
         "border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors",
         {
-          "border-gray-300 hover:border-primary-400 hover:bg-gray-50": !isDragActive && !disabled,
-          "border-primary-500 bg-primary-50": isDragActive && !isDragReject,
-          "border-red-500 bg-red-50": isDragReject,
-          "border-gray-200 bg-gray-100 cursor-not-allowed": disabled,
+          "border-white/20 hover:border-primary-400 hover:bg-white/5": !isDragActive && !disabled,
+          "border-primary-500 bg-primary-500/10": isDragActive && !isDragReject,
+          "border-red-500 bg-red-500/10": isDragReject,
+          "border-white/10 bg-dark-700 cursor-not-allowed": disabled,
         }
       )}
     >
       <input {...getInputProps()} />
       <Upload
         className={clsx("w-12 h-12 mx-auto mb-4", {
-          "text-gray-400": !isDragActive,
+          "text-gray-500": !isDragActive,
           "text-primary-500": isDragActive && !isDragReject,
           "text-red-500": isDragReject,
         })}
       />
       {isDragReject ? (
-        <p className="text-red-600 font-medium">
+        <p className="text-red-400 font-medium">
           Filformatet stöds inte
         </p>
       ) : isDragActive ? (
-        <p className="text-primary-600 font-medium">
+        <p className="text-primary-400 font-medium">
           Släpp filen här...
         </p>
       ) : (
         <>
-          <p className="text-gray-600 mb-1">
-            <span className="font-medium text-primary-600">Klicka för att välja</span>
+          <p className="text-gray-400 mb-1">
+            <span className="font-medium text-primary-400">Klicka för att välja</span>
             {" "}eller dra och släpp
           </p>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-400">
             MP3, WAV, M4A, OGG, FLAC, WebM (max 2 GB)
           </p>
         </>

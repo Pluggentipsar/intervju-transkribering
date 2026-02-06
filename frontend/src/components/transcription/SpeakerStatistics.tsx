@@ -15,14 +15,14 @@ import type { Segment } from "@/types";
 
 // Colors for speakers
 const SPEAKER_COLORS = [
-  { bg: "bg-blue-500", light: "bg-blue-100", text: "text-blue-700" },
-  { bg: "bg-emerald-500", light: "bg-emerald-100", text: "text-emerald-700" },
-  { bg: "bg-purple-500", light: "bg-purple-100", text: "text-purple-700" },
-  { bg: "bg-amber-500", light: "bg-amber-100", text: "text-amber-700" },
-  { bg: "bg-rose-500", light: "bg-rose-100", text: "text-rose-700" },
-  { bg: "bg-cyan-500", light: "bg-cyan-100", text: "text-cyan-700" },
-  { bg: "bg-orange-500", light: "bg-orange-100", text: "text-orange-700" },
-  { bg: "bg-indigo-500", light: "bg-indigo-100", text: "text-indigo-700" },
+  { bg: "bg-blue-500", light: "bg-blue-500/10", text: "text-blue-400" },
+  { bg: "bg-emerald-500", light: "bg-emerald-500/10", text: "text-emerald-400" },
+  { bg: "bg-purple-500", light: "bg-purple-500/10", text: "text-purple-400" },
+  { bg: "bg-amber-500", light: "bg-amber-500/10", text: "text-amber-400" },
+  { bg: "bg-rose-500", light: "bg-rose-500/10", text: "text-rose-400" },
+  { bg: "bg-cyan-500", light: "bg-cyan-500/10", text: "text-cyan-400" },
+  { bg: "bg-orange-500", light: "bg-orange-500/10", text: "text-orange-400" },
+  { bg: "bg-indigo-500", light: "bg-indigo-500/10", text: "text-indigo-400" },
 ];
 
 interface SpeakerStats {
@@ -56,7 +56,7 @@ function StatBar({
 }) {
   const percentage = maxValue > 0 ? (value / maxValue) * 100 : 0;
   return (
-    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+    <div className="h-2 bg-dark-700 rounded-full overflow-hidden">
       <div
         className={clsx("h-full rounded-full transition-all duration-500", color)}
         style={{ width: `${percentage}%` }}
@@ -132,19 +132,19 @@ export function SpeakerStatistics({ segments, className }: SpeakerStatisticsProp
   }
 
   return (
-    <div className={clsx("bg-white rounded-xl border overflow-hidden", className)}>
+    <div className={clsx("bg-dark-800/50 rounded-xl border border-white/10 overflow-hidden", className)}>
       {/* Header - always visible */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
+        className="w-full flex items-center justify-between p-4 hover:bg-white/5 transition-colors"
       >
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-primary-50 to-primary-100 rounded-lg flex items-center justify-center">
-            <BarChart3 className="w-5 h-5 text-primary-600" />
+          <div className="w-10 h-10 bg-gradient-to-br from-primary-500/10 to-primary-500/20 rounded-lg flex items-center justify-center">
+            <BarChart3 className="w-5 h-5 text-primary-400" />
           </div>
           <div className="text-left">
-            <h3 className="font-medium text-gray-900">Talarstatistik</h3>
-            <p className="text-sm text-gray-500">
+            <h3 className="font-medium text-white">Talarstatistik</h3>
+            <p className="text-sm text-gray-400">
               {stats.speakers.length} talare · {formatTime(stats.totalTime)} total tid
             </p>
           </div>
@@ -164,25 +164,25 @@ export function SpeakerStatistics({ segments, className }: SpeakerStatisticsProp
                 />
               ))}
             </div>
-            <ChevronDown className="w-5 h-5 text-gray-400" />
+            <ChevronDown className="w-5 h-5 text-gray-500" />
           </div>
         )}
 
-        {isExpanded && <ChevronUp className="w-5 h-5 text-gray-400" />}
+        {isExpanded && <ChevronUp className="w-5 h-5 text-gray-500" />}
       </button>
 
       {/* Expanded content */}
       {isExpanded && (
-        <div className="border-t">
+        <div className="border-t border-white/10">
           {/* View mode tabs */}
-          <div className="flex border-b bg-gray-50">
+          <div className="flex border-b border-white/10 bg-dark-900/50">
             <button
               onClick={() => setViewMode("time")}
               className={clsx(
                 "flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-colors",
                 viewMode === "time"
-                  ? "text-primary-600 bg-white border-b-2 border-primary-500 -mb-px"
-                  : "text-gray-500 hover:text-gray-700"
+                  ? "text-primary-400 bg-dark-800/50 border-b-2 border-primary-500 -mb-px"
+                  : "text-gray-400 hover:text-gray-300"
               )}
             >
               <Clock className="w-4 h-4" />
@@ -193,8 +193,8 @@ export function SpeakerStatistics({ segments, className }: SpeakerStatisticsProp
               className={clsx(
                 "flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-colors",
                 viewMode === "words"
-                  ? "text-primary-600 bg-white border-b-2 border-primary-500 -mb-px"
-                  : "text-gray-500 hover:text-gray-700"
+                  ? "text-primary-400 bg-dark-800/50 border-b-2 border-primary-500 -mb-px"
+                  : "text-gray-400 hover:text-gray-300"
               )}
             >
               <MessageSquare className="w-4 h-4" />
@@ -205,8 +205,8 @@ export function SpeakerStatistics({ segments, className }: SpeakerStatisticsProp
               className={clsx(
                 "flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-colors",
                 viewMode === "segments"
-                  ? "text-primary-600 bg-white border-b-2 border-primary-500 -mb-px"
-                  : "text-gray-500 hover:text-gray-700"
+                  ? "text-primary-400 bg-dark-800/50 border-b-2 border-primary-500 -mb-px"
+                  : "text-gray-400 hover:text-gray-300"
               )}
             >
               <Hash className="w-4 h-4" />
@@ -226,23 +226,23 @@ export function SpeakerStatistics({ segments, className }: SpeakerStatisticsProp
                         speaker.color.bg
                       )}
                     />
-                    <span className="font-medium text-gray-900">
+                    <span className="font-medium text-white">
                       {speaker.speaker}
                     </span>
                   </div>
                   <div className="text-right">
                     {viewMode === "time" && (
-                      <span className="text-sm font-medium text-gray-900">
+                      <span className="text-sm font-medium text-white">
                         {formatTime(speaker.speakingTime)}
-                        <span className="text-gray-400 ml-1">
+                        <span className="text-gray-500 ml-1">
                           ({speaker.percentage.toFixed(0)}%)
                         </span>
                       </span>
                     )}
                     {viewMode === "words" && (
-                      <span className="text-sm font-medium text-gray-900">
+                      <span className="text-sm font-medium text-white">
                         {speaker.wordCount.toLocaleString()} ord
-                        <span className="text-gray-400 ml-1">
+                        <span className="text-gray-500 ml-1">
                           (
                           {(
                             (speaker.wordCount / stats.totalWords) *
@@ -253,9 +253,9 @@ export function SpeakerStatistics({ segments, className }: SpeakerStatisticsProp
                       </span>
                     )}
                     {viewMode === "segments" && (
-                      <span className="text-sm font-medium text-gray-900">
+                      <span className="text-sm font-medium text-white">
                         {speaker.segmentCount} segment
-                        <span className="text-gray-400 ml-1">
+                        <span className="text-gray-500 ml-1">
                           (
                           {(
                             (speaker.segmentCount / stats.totalSegments) *
@@ -290,8 +290,8 @@ export function SpeakerStatistics({ segments, className }: SpeakerStatisticsProp
 
           {/* Distribution visualization */}
           <div className="px-4 pb-4">
-            <div className="p-4 bg-gray-50 rounded-lg">
-              <p className="text-xs text-gray-500 mb-2 uppercase tracking-wide font-medium">
+            <div className="p-4 bg-dark-900/50 rounded-lg">
+              <p className="text-xs text-gray-400 mb-2 uppercase tracking-wide font-medium">
                 Fördelning av taltid
               </p>
               <div className="flex h-6 rounded-lg overflow-hidden">
@@ -318,7 +318,7 @@ export function SpeakerStatistics({ segments, className }: SpeakerStatisticsProp
                     <div
                       className={clsx("w-2.5 h-2.5 rounded-full", speaker.color.bg)}
                     />
-                    <span className="text-xs text-gray-600">{speaker.speaker}</span>
+                    <span className="text-xs text-gray-400">{speaker.speaker}</span>
                   </div>
                 ))}
               </div>

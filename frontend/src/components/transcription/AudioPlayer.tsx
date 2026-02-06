@@ -195,13 +195,13 @@ export function AudioPlayer({
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
   return (
-    <div className={clsx("bg-white rounded-xl border p-4", className)}>
+    <div className={clsx("bg-dark-800/50 rounded-xl border border-white/10 p-4", className)}>
       <audio ref={audioRef} src={audioUrl} preload="metadata" />
 
       {/* Progress bar */}
       <div
         ref={progressRef}
-        className="relative h-2 bg-gray-200 rounded-full cursor-pointer mb-4 group"
+        className="relative h-2 bg-dark-700 rounded-full cursor-pointer mb-4 group"
         onClick={handleProgressClick}
         onMouseDown={handleProgressMouseDown}
       >
@@ -220,7 +220,7 @@ export function AudioPlayer({
       {/* Controls */}
       <div className="flex items-center justify-between">
         {/* Left: Time display */}
-        <div className="text-sm font-mono text-gray-600 min-w-[100px]">
+        <div className="text-sm font-mono text-gray-400 min-w-[100px]">
           {formatTime(currentTime)} / {formatTime(duration)}
         </div>
 
@@ -229,7 +229,7 @@ export function AudioPlayer({
           {/* Skip back 10s */}
           <button
             onClick={() => skip(-10)}
-            className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
             title="Hoppa 10s bakåt"
           >
             <Rewind className="w-5 h-5" />
@@ -251,7 +251,7 @@ export function AudioPlayer({
           {/* Skip forward 10s */}
           <button
             onClick={() => skip(10)}
-            className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
             title="Hoppa 10s framåt"
           >
             <FastForward className="w-5 h-5" />
@@ -266,8 +266,8 @@ export function AudioPlayer({
             className={clsx(
               "px-2 py-1 text-xs font-medium rounded border transition-colors",
               playbackRate !== 1
-                ? "bg-primary-100 text-primary-700 border-primary-200"
-                : "text-gray-600 border-gray-300 hover:bg-gray-50"
+                ? "bg-primary-500/20 text-primary-400 border-primary-500/20"
+                : "text-gray-400 border-white/20 hover:bg-white/5"
             )}
             title="Uppspelningshastighet"
           >
@@ -278,7 +278,7 @@ export function AudioPlayer({
           <div className="flex items-center gap-1">
             <button
               onClick={toggleMute}
-              className="p-1 text-gray-600 hover:text-gray-900 transition-colors"
+              className="p-1 text-gray-400 hover:text-white transition-colors"
               title={isMuted ? "Slå på ljud" : "Stäng av ljud"}
             >
               {isMuted || volume === 0 ? (
@@ -294,7 +294,7 @@ export function AudioPlayer({
               step="0.1"
               value={isMuted ? 0 : volume}
               onChange={handleVolumeChange}
-              className="w-20 h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary-500"
+              className="w-20 h-1 bg-dark-700 rounded-lg appearance-none cursor-pointer accent-primary-500"
             />
           </div>
         </div>

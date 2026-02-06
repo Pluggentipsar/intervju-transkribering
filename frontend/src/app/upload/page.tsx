@@ -16,10 +16,10 @@ export default function UploadPage() {
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
       {/* Page header */}
       <div className="mb-6">
-        <h1 className="text-xl font-bold text-gray-900 mb-1">
+        <h1 className="text-xl font-bold text-white mb-1">
           Ny transkription
         </h1>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-400">
           Ladda upp ljudfiler sa transkriberar vi dem med KB Whisper
         </p>
       </div>
@@ -31,8 +31,8 @@ export default function UploadPage() {
           className={clsx(
             "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors",
             mode === "single"
-              ? "bg-primary-50 text-primary-700 border border-primary-200"
-              : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
+              ? "bg-primary-500/10 text-primary-400 border border-primary-500/20"
+              : "bg-dark-800 text-gray-400 border border-white/10 hover:bg-dark-700"
           )}
         >
           <FileAudio className="w-4 h-4" />
@@ -43,8 +43,8 @@ export default function UploadPage() {
           className={clsx(
             "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors",
             mode === "batch"
-              ? "bg-primary-50 text-primary-700 border border-primary-200"
-              : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
+              ? "bg-primary-500/10 text-primary-400 border border-primary-500/20"
+              : "bg-dark-800 text-gray-400 border border-white/10 hover:bg-dark-700"
           )}
         >
           <FolderOpen className="w-4 h-4" />
@@ -55,8 +55,8 @@ export default function UploadPage() {
           className={clsx(
             "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors",
             mode === "record"
-              ? "bg-primary-50 text-primary-700 border border-primary-200"
-              : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
+              ? "bg-primary-500/10 text-primary-400 border border-primary-500/20"
+              : "bg-dark-800 text-gray-400 border border-white/10 hover:bg-dark-700"
           )}
         >
           <Mic className="w-4 h-4" />
@@ -65,7 +65,7 @@ export default function UploadPage() {
       </div>
 
       {/* Form */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div className="bg-dark-800/50 rounded-xl border border-white/10 overflow-hidden">
         {mode === "single" && <UploadForm />}
         {mode === "batch" && <BatchUploadForm />}
         {mode === "record" && <RecordForm />}

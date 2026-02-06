@@ -4,7 +4,9 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { clsx } from "clsx";
-import { Menu, X, Mic, Download } from "lucide-react";
+import { Menu, X, Mic, Download, Settings, Info } from "lucide-react";
+import { SettingsModal } from "@/components/setup";
+import { AboutModal } from "@/components/about";
 
 const IS_LOCAL = process.env.NEXT_PUBLIC_APP_MODE === "local";
 
@@ -24,6 +26,8 @@ const marketingNavItems = [
 export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [showAbout, setShowAbout] = useState(false);
   const pathname = usePathname();
 
   const navItems = IS_LOCAL ? localNavItems : marketingNavItems;
@@ -46,7 +50,7 @@ export function Header() {
       className={clsx(
         "sticky top-0 z-50 transition-all duration-300",
         IS_LOCAL
-          ? "bg-white border-b border-gray-200"
+          ? "bg-dark-950/95 backdrop-blur-md border-b border-white/10"
           : scrolled
             ? "bg-dark-950/95 backdrop-blur-md border-b border-white/10 shadow-lg"
             : "bg-transparent"
@@ -59,7 +63,7 @@ export function Header() {
             href="/"
             className={clsx(
               "flex items-center gap-2 font-semibold",
-              IS_LOCAL ? "text-gray-900" : "text-white"
+              "text-white"
             )}
           >
             <div className="w-8 h-8 bg-gradient-to-br from-primary-400 to-primary-600 rounded-lg flex items-center justify-center">
@@ -102,14 +106,34 @@ export function Header() {
                   className={clsx(
                     "px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
                     isActive
-                      ? "bg-primary-50 text-primary-700"
-                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                      ? "bg-primary-500/10 text-primary-400"
+                      : "text-gray-300 hover:text-white hover:bg-white/10"
                   )}
                 >
                   {item.label}
                 </Link>
               );
             })}
+
+            {/* Local mode: Settings & About buttons */}
+            {IS_LOCAL && (
+              <>
+                <button
+                  onClick={() => setShowSettings(true)}
+                  className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                  title="Installningar"
+                >
+                  <Settings className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setShowAbout(true)}
+                  className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                  title="Om TystText"
+                >
+                  <Info className="w-4 h-4" />
+                </button>
+              </>
+            )}
 
             {/* Marketing CTA button */}
             {!IS_LOCAL && (
@@ -128,9 +152,7 @@ export function Header() {
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className={clsx(
               "md:hidden p-2 rounded-md",
-              IS_LOCAL
-                ? "text-gray-600 hover:bg-gray-100"
-                : "text-gray-300 hover:bg-white/10"
+              "text-gray-300 hover:bg-white/10"
             )}
             aria-label="Toggle menu"
           >
@@ -148,9 +170,7 @@ export function Header() {
         <nav
           className={clsx(
             "md:hidden border-t px-4 py-2 space-y-1",
-            IS_LOCAL
-              ? "border-gray-200 bg-white"
-              : "border-white/10 bg-dark-950/95 backdrop-blur-md"
+            "border-white/10 bg-dark-950/95 backdrop-blur-md"
           )}
         >
           {navItems.map((item) => {
@@ -181,8 +201,8 @@ export function Header() {
                 className={clsx(
                   "block px-3 py-2 rounded-md text-sm font-medium transition-colors",
                   isActive
-                    ? "bg-primary-50 text-primary-700"
-                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                    ? "bg-primary-500/10 text-primary-400"
+                    : "text-gray-300 hover:text-white hover:bg-white/10"
                 )}
               >
                 {item.label}
@@ -190,6 +210,20 @@ export function Header() {
             );
           })}
         </nav>
+      )}
+      {/* Modals */}
+      {IS_LOCAL && (
+        <>
+          <SettingsModal isOpen={showSettings} onClose={() => setShowSettings(false)} />
+          <AboutModal
+            isOpen={showAbout}
+            onClose={() => setShowAbout(false)}
+            onOpenSetup={() => {
+              setShowAbout(false);
+              setShowSettings(true);
+            }}
+          />
+        </>
       )}
     </header>
   );

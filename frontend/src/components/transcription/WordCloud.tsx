@@ -95,14 +95,14 @@ export function WordCloud({ segments, showAnonymized = false, className }: WordC
 
   // Color palette for words
   const colors = [
-    "text-blue-600",
-    "text-emerald-600",
-    "text-purple-600",
-    "text-amber-600",
-    "text-rose-600",
-    "text-cyan-600",
-    "text-indigo-600",
-    "text-orange-600",
+    "text-blue-400",
+    "text-emerald-400",
+    "text-purple-400",
+    "text-amber-400",
+    "text-rose-400",
+    "text-cyan-400",
+    "text-indigo-400",
+    "text-orange-400",
   ];
 
   if (wordData.length === 0) {
@@ -110,19 +110,19 @@ export function WordCloud({ segments, showAnonymized = false, className }: WordC
   }
 
   return (
-    <div className={clsx("bg-white rounded-xl border overflow-hidden", className)}>
+    <div className={clsx("bg-dark-800/50 rounded-xl border border-white/10 overflow-hidden", className)}>
       {/* Header */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
+        className="w-full flex items-center justify-between p-4 hover:bg-white/5 transition-colors"
       >
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg flex items-center justify-center">
-            <Cloud className="w-5 h-5 text-purple-600" />
+          <div className="w-10 h-10 bg-gradient-to-br from-purple-500/10 to-purple-500/20 rounded-lg flex items-center justify-center">
+            <Cloud className="w-5 h-5 text-purple-400" />
           </div>
           <div className="text-left">
-            <h3 className="font-medium text-gray-900">Ordmoln</h3>
-            <p className="text-sm text-gray-500">
+            <h3 className="font-medium text-white">Ordmoln</h3>
+            <p className="text-sm text-gray-400">
               {wordData.length} vanligaste orden
             </p>
           </div>
@@ -145,19 +145,19 @@ export function WordCloud({ segments, showAnonymized = false, className }: WordC
                 </span>
               ))}
             </div>
-            <ChevronDown className="w-5 h-5 text-gray-400" />
+            <ChevronDown className="w-5 h-5 text-gray-500" />
           </div>
         )}
 
-        {isExpanded && <ChevronUp className="w-5 h-5 text-gray-400" />}
+        {isExpanded && <ChevronUp className="w-5 h-5 text-gray-500" />}
       </button>
 
       {/* Expanded content */}
       {isExpanded && (
-        <div className="border-t">
+        <div className="border-t border-white/10">
           {/* Word count selector */}
-          <div className="px-4 py-3 bg-gray-50 border-b flex items-center justify-between">
-            <span className="text-sm text-gray-600">Antal ord:</span>
+          <div className="px-4 py-3 bg-dark-900/50 border-b border-white/10 flex items-center justify-between">
+            <span className="text-sm text-gray-400">Antal ord:</span>
             <div className="flex gap-2">
               {[25, 50, 100].map((n) => (
                 <button
@@ -167,7 +167,7 @@ export function WordCloud({ segments, showAnonymized = false, className }: WordC
                     "px-3 py-1 text-sm rounded-lg transition-colors",
                     maxWords === n
                       ? "bg-purple-500 text-white"
-                      : "bg-white border text-gray-600 hover:bg-gray-50"
+                      : "bg-dark-800/50 border border-white/10 text-gray-400 hover:bg-white/5"
                   )}
                 >
                   {n}
@@ -200,8 +200,8 @@ export function WordCloud({ segments, showAnonymized = false, className }: WordC
 
           {/* Top words list */}
           <div className="px-4 pb-4">
-            <div className="p-4 bg-gray-50 rounded-lg">
-              <p className="text-xs text-gray-500 mb-3 uppercase tracking-wide font-medium flex items-center gap-1">
+            <div className="p-4 bg-dark-900/50 rounded-lg">
+              <p className="text-xs text-gray-400 mb-3 uppercase tracking-wide font-medium flex items-center gap-1">
                 <Hash className="w-3 h-3" />
                 Topp 10 mest frekventa ord
               </p>
@@ -209,9 +209,9 @@ export function WordCloud({ segments, showAnonymized = false, className }: WordC
                 {wordData.slice(0, 10).map((item, index) => (
                   <div
                     key={item.word}
-                    className="flex items-center justify-between bg-white rounded-lg px-3 py-2 border"
+                    className="flex items-center justify-between bg-dark-800/50 rounded-lg px-3 py-2 border border-white/10"
                   >
-                    <span className="font-medium text-gray-900 truncate">
+                    <span className="font-medium text-white truncate">
                       {item.word}
                     </span>
                     <span className={clsx("text-sm ml-2", colors[index % colors.length])}>

@@ -214,12 +214,12 @@ export function TopicSegmentation({
 
   // Color palette for topics
   const colors = [
-    { bg: "bg-blue-100", border: "border-blue-300", text: "text-blue-700", dot: "bg-blue-500" },
-    { bg: "bg-emerald-100", border: "border-emerald-300", text: "text-emerald-700", dot: "bg-emerald-500" },
-    { bg: "bg-purple-100", border: "border-purple-300", text: "text-purple-700", dot: "bg-purple-500" },
-    { bg: "bg-amber-100", border: "border-amber-300", text: "text-amber-700", dot: "bg-amber-500" },
-    { bg: "bg-rose-100", border: "border-rose-300", text: "text-rose-700", dot: "bg-rose-500" },
-    { bg: "bg-cyan-100", border: "border-cyan-300", text: "text-cyan-700", dot: "bg-cyan-500" },
+    { bg: "bg-blue-500/10", border: "border-blue-500/20", text: "text-blue-400", dot: "bg-blue-500" },
+    { bg: "bg-emerald-500/10", border: "border-emerald-500/20", text: "text-emerald-400", dot: "bg-emerald-500" },
+    { bg: "bg-purple-500/10", border: "border-purple-500/20", text: "text-purple-400", dot: "bg-purple-500" },
+    { bg: "bg-amber-500/10", border: "border-amber-500/20", text: "text-amber-400", dot: "bg-amber-500" },
+    { bg: "bg-rose-500/10", border: "border-rose-500/20", text: "text-rose-400", dot: "bg-rose-500" },
+    { bg: "bg-cyan-500/10", border: "border-cyan-500/20", text: "text-cyan-400", dot: "bg-cyan-500" },
   ];
 
   if (topicSections.length === 0) {
@@ -227,19 +227,19 @@ export function TopicSegmentation({
   }
 
   return (
-    <div className={clsx("bg-white rounded-xl border overflow-hidden", className)}>
+    <div className={clsx("bg-dark-800/50 rounded-xl border border-white/10 overflow-hidden", className)}>
       {/* Header */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
+        className="w-full flex items-center justify-between p-4 hover:bg-white/5 transition-colors"
       >
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-lg flex items-center justify-center">
-            <Layers className="w-5 h-5 text-indigo-600" />
+          <div className="w-10 h-10 bg-gradient-to-br from-indigo-500/10 to-indigo-500/20 rounded-lg flex items-center justify-center">
+            <Layers className="w-5 h-5 text-indigo-400" />
           </div>
           <div className="text-left">
-            <h3 className="font-medium text-gray-900">Ämnessegmentering</h3>
-            <p className="text-sm text-gray-500">
+            <h3 className="font-medium text-white">Ämnessegmentering</h3>
+            <p className="text-sm text-gray-400">
               {topicSections.length} identifierade ämnesavsnitt
             </p>
           </div>
@@ -260,24 +260,24 @@ export function TopicSegmentation({
                 />
               ))}
               {topicSections.length > 4 && (
-                <span className="text-xs text-gray-400 ml-1">
+                <span className="text-xs text-gray-500 ml-1">
                   +{topicSections.length - 4}
                 </span>
               )}
             </div>
-            <ChevronDown className="w-5 h-5 text-gray-400" />
+            <ChevronDown className="w-5 h-5 text-gray-500" />
           </div>
         )}
 
-        {isExpanded && <ChevronUp className="w-5 h-5 text-gray-400" />}
+        {isExpanded && <ChevronUp className="w-5 h-5 text-gray-500" />}
       </button>
 
       {/* Expanded content */}
       {isExpanded && (
-        <div className="border-t">
+        <div className="border-t border-white/10">
           {/* Sensitivity selector */}
-          <div className="px-4 py-3 bg-gray-50 border-b flex items-center justify-between">
-            <span className="text-sm text-gray-600">Känslighet:</span>
+          <div className="px-4 py-3 bg-dark-900/50 border-b border-white/10 flex items-center justify-between">
+            <span className="text-sm text-gray-400">Känslighet:</span>
             <div className="flex gap-2">
               {[
                 { value: "low" as const, label: "Låg" },
@@ -291,7 +291,7 @@ export function TopicSegmentation({
                     "px-3 py-1 text-sm rounded-lg transition-colors",
                     sensitivity === opt.value
                       ? "bg-indigo-500 text-white"
-                      : "bg-white border text-gray-600 hover:bg-gray-50"
+                      : "bg-dark-800/50 border border-white/10 text-gray-400 hover:bg-white/5"
                   )}
                 >
                   {opt.label}
@@ -351,7 +351,7 @@ export function TopicSegmentation({
                           Avsnitt {index + 1}
                         </span>
                       </div>
-                      <div className="flex items-center gap-3 text-sm text-gray-500">
+                      <div className="flex items-center gap-3 text-sm text-gray-400">
                         <span className="flex items-center gap-1">
                           <Clock className="w-4 h-4" />
                           {formatTime(section.startTime)}
@@ -372,12 +372,12 @@ export function TopicSegmentation({
                       ))}
                     </div>
 
-                    <div className="flex items-center justify-between mt-3 text-sm text-gray-500">
+                    <div className="flex items-center justify-between mt-3 text-sm text-gray-400">
                       <span className="flex items-center gap-1">
                         <MessageSquare className="w-4 h-4" />
                         {section.segmentCount} segment
                       </span>
-                      <span className="flex items-center gap-1 text-gray-400">
+                      <span className="flex items-center gap-1 text-gray-500">
                         Klicka för att hoppa hit
                         <ArrowRight className="w-4 h-4" />
                       </span>

@@ -80,15 +80,15 @@ const STATUS_ICON: Record<
   JobStatus,
   { icon: typeof Clock; color: string; bg: string }
 > = {
-  pending: { icon: Clock, color: "text-gray-400", bg: "bg-gray-100" },
+  pending: { icon: Clock, color: "text-gray-400", bg: "bg-gray-500/10" },
   processing: {
     icon: Loader2,
-    color: "text-primary-600",
-    bg: "bg-primary-50",
+    color: "text-primary-400",
+    bg: "bg-primary-500/10",
   },
-  completed: { icon: CheckCircle, color: "text-green-600", bg: "bg-green-50" },
-  failed: { icon: XCircle, color: "text-red-500", bg: "bg-red-50" },
-  cancelled: { icon: XCircle, color: "text-gray-400", bg: "bg-gray-100" },
+  completed: { icon: CheckCircle, color: "text-green-400", bg: "bg-green-500/10" },
+  failed: { icon: XCircle, color: "text-red-400", bg: "bg-red-500/10" },
+  cancelled: { icon: XCircle, color: "text-gray-400", bg: "bg-gray-500/10" },
 };
 
 function RecentJobRow({ job }: { job: Job }) {
@@ -98,13 +98,13 @@ function RecentJobRow({ job }: { job: Job }) {
   return (
     <Link
       href={`/jobs/${job.id}`}
-      className="flex items-center gap-3 px-4 py-3.5 hover:bg-gray-50/80 transition-colors group"
+      className="flex items-center gap-3 px-4 py-3.5 hover:bg-white/5 transition-colors group"
     >
-      <div className="w-9 h-9 bg-gray-100 rounded-lg flex items-center justify-center group-hover:bg-primary-50 transition-colors">
-        <FileAudio className="w-4 h-4 text-gray-400 group-hover:text-primary-600 transition-colors" />
+      <div className="w-9 h-9 bg-dark-700 rounded-lg flex items-center justify-center group-hover:bg-primary-500/10 transition-colors">
+        <FileAudio className="w-4 h-4 text-gray-400 group-hover:text-primary-400 transition-colors" />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-gray-900 truncate">
+        <p className="text-sm font-medium text-white truncate">
           {job.file_name}
         </p>
         <p className="text-xs text-gray-400 mt-0.5">
@@ -121,7 +121,7 @@ function RecentJobRow({ job }: { job: Job }) {
           className={`w-3.5 h-3.5 ${config.color} ${job.status === "processing" ? "animate-spin" : ""}`}
         />
       </div>
-      <ArrowRight className="w-4 h-4 text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+      <ArrowRight className="w-4 h-4 text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity" />
     </Link>
   );
 }
@@ -144,15 +144,15 @@ function LocalAppHome() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-10">
         {/* Welcome header */}
         <div className="mb-10">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+          <h1 className="text-2xl font-bold text-white mb-2">
             Vad vill du gora?
           </h1>
-          <div className="flex items-center gap-2 text-gray-500 text-sm">
-            <div className="flex items-center gap-1.5 px-2.5 py-1 bg-green-50 text-green-700 rounded-full text-xs font-medium">
+          <div className="flex items-center gap-2 text-gray-400 text-sm">
+            <div className="flex items-center gap-1.5 px-2.5 py-1 bg-green-500/10 text-green-400 rounded-full text-xs font-medium">
               <Lock className="w-3 h-3" />
               Lokalt lage
             </div>
-            <span className="text-gray-400">
+            <span className="text-gray-500">
               All bearbetning sker pa din dator
             </span>
           </div>
@@ -162,18 +162,18 @@ function LocalAppHome() {
         <div className="grid sm:grid-cols-2 gap-5 mb-10">
           <Link
             href="/upload"
-            className="group relative overflow-hidden flex items-start gap-4 p-6 bg-white border border-gray-200 rounded-2xl hover:border-primary-200 hover:shadow-lg hover:shadow-primary-500/5 transition-all duration-300"
+            className="group relative overflow-hidden flex items-start gap-4 p-6 bg-dark-800/50 border border-white/10 rounded-2xl hover:border-primary-500/30 hover:shadow-lg hover:shadow-primary-500/5 transition-all duration-300"
           >
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-primary-50 to-transparent rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            <div className="relative w-12 h-12 bg-gradient-to-br from-primary-50 to-primary-100 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
-              <Mic className="w-5.5 h-5.5 text-primary-600" />
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-primary-500/10 to-transparent rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <div className="relative w-12 h-12 bg-gradient-to-br from-primary-500/10 to-primary-500/20 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+              <Mic className="w-5.5 h-5.5 text-primary-400" />
             </div>
             <div className="relative flex-1">
-              <h2 className="font-semibold text-gray-900 mb-1 flex items-center gap-2">
+              <h2 className="font-semibold text-white mb-1 flex items-center gap-2">
                 Ny transkription
-                <ArrowRight className="w-4 h-4 text-primary-500 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
+                <ArrowRight className="w-4 h-4 text-primary-400 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
               </h2>
-              <p className="text-sm text-gray-500 leading-relaxed">
+              <p className="text-sm text-gray-400 leading-relaxed">
                 Ladda upp ljud och transkribera med KB Whisper
               </p>
             </div>
@@ -181,18 +181,18 @@ function LocalAppHome() {
 
           <Link
             href="/anonymize"
-            className="group relative overflow-hidden flex items-start gap-4 p-6 bg-white border border-gray-200 rounded-2xl hover:border-amber-200 hover:shadow-lg hover:shadow-amber-500/5 transition-all duration-300"
+            className="group relative overflow-hidden flex items-start gap-4 p-6 bg-dark-800/50 border border-white/10 rounded-2xl hover:border-amber-500/30 hover:shadow-lg hover:shadow-amber-500/5 transition-all duration-300"
           >
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-amber-50 to-transparent rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            <div className="relative w-12 h-12 bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
-              <Shield className="w-5.5 h-5.5 text-amber-600" />
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-amber-500/10 to-transparent rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <div className="relative w-12 h-12 bg-gradient-to-br from-amber-500/10 to-amber-500/20 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+              <Shield className="w-5.5 h-5.5 text-amber-400" />
             </div>
             <div className="relative flex-1">
-              <h2 className="font-semibold text-gray-900 mb-1 flex items-center gap-2">
+              <h2 className="font-semibold text-white mb-1 flex items-center gap-2">
                 Avidentifiera text
-                <ArrowRight className="w-4 h-4 text-amber-500 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
+                <ArrowRight className="w-4 h-4 text-amber-400 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
               </h2>
-              <p className="text-sm text-gray-500 leading-relaxed">
+              <p className="text-sm text-gray-400 leading-relaxed">
                 Anonymisera namn, platser och personnummer
               </p>
             </div>
@@ -201,20 +201,20 @@ function LocalAppHome() {
 
         {/* Recent jobs */}
         {jobs.length > 0 && (
-          <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
-            <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100">
-              <h2 className="font-semibold text-gray-900 text-sm">
+          <div className="bg-dark-800/50 border border-white/10 rounded-2xl overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/5">
+              <h2 className="font-semibold text-white text-sm">
                 Senaste transkriptioner
               </h2>
               <Link
                 href="/jobs"
-                className="text-xs text-primary-600 hover:text-primary-700 font-medium flex items-center gap-1 transition-colors"
+                className="text-xs text-primary-400 hover:text-primary-300 font-medium flex items-center gap-1 transition-colors"
               >
                 Visa alla
                 <ArrowRight className="w-3 h-3" />
               </Link>
             </div>
-            <div className="divide-y divide-gray-100/80">
+            <div className="divide-y divide-white/5">
               {jobs.map((job) => (
                 <RecentJobRow key={job.id} job={job} />
               ))}
@@ -224,16 +224,16 @@ function LocalAppHome() {
 
         {/* Empty state */}
         {jobs.length === 0 && (
-          <div className="relative text-center py-16 bg-white border border-gray-200 rounded-2xl overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-b from-gray-50/50 to-transparent" />
+          <div className="relative text-center py-16 bg-dark-800/50 border border-white/10 rounded-2xl overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-b from-dark-800/50 to-transparent" />
             <div className="relative">
-              <div className="w-16 h-16 bg-gradient-to-br from-gray-100 to-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-sm">
-                <Sparkles className="w-7 h-7 text-gray-300" />
+              <div className="w-16 h-16 bg-gradient-to-br from-dark-700 to-dark-800 rounded-2xl flex items-center justify-center mx-auto mb-5">
+                <Sparkles className="w-7 h-7 text-gray-500" />
               </div>
-              <h3 className="font-semibold text-gray-900 mb-2 text-lg">
+              <h3 className="font-semibold text-white mb-2 text-lg">
                 Inga transkriptioner an
               </h3>
-              <p className="text-sm text-gray-500 mb-6 max-w-xs mx-auto">
+              <p className="text-sm text-gray-400 mb-6 max-w-xs mx-auto">
                 Ladda upp en ljudfil for att komma igang med din forsta transkription
               </p>
               <Link

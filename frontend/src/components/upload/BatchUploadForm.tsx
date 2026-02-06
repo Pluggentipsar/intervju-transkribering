@@ -175,7 +175,7 @@ export function BatchUploadForm() {
   const getStatusIcon = (status: FileStatus) => {
     switch (status) {
       case "pending":
-        return <Clock className="w-4 h-4 text-gray-400" />;
+        return <Clock className="w-4 h-4 text-gray-500" />;
       case "uploading":
       case "processing":
         return <Loader2 className="w-4 h-4 text-blue-500 animate-spin" />;
@@ -202,13 +202,13 @@ export function BatchUploadForm() {
   };
 
   return (
-    <div className="divide-y divide-gray-100">
+    <div className="divide-y divide-white/5">
       {/* Dropzone */}
       <div className="p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-1">
+        <h2 className="text-lg font-semibold text-white mb-1">
           1. Välj ljudfiler
         </h2>
-        <p className="text-sm text-gray-500 mb-4">
+        <p className="text-sm text-gray-400 mb-4">
           Dra och släpp flera filer eller klicka för att välja
         </p>
 
@@ -217,32 +217,32 @@ export function BatchUploadForm() {
           className={clsx(
             "border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors",
             {
-              "border-gray-300 hover:border-primary-400 hover:bg-gray-50": !isDragActive && !isProcessing,
-              "border-primary-500 bg-primary-50": isDragActive && !isDragReject,
-              "border-red-500 bg-red-50": isDragReject,
-              "border-gray-200 bg-gray-100 cursor-not-allowed": isProcessing,
+              "border-white/20 hover:border-primary-400 hover:bg-white/5": !isDragActive && !isProcessing,
+              "border-primary-500 bg-primary-500/10": isDragActive && !isDragReject,
+              "border-red-500 bg-red-500/10": isDragReject,
+              "border-white/10 bg-dark-700 cursor-not-allowed": isProcessing,
             }
           )}
         >
           <input {...getInputProps()} />
           <Upload
             className={clsx("w-12 h-12 mx-auto mb-4", {
-              "text-gray-400": !isDragActive,
+              "text-gray-500": !isDragActive,
               "text-primary-500": isDragActive && !isDragReject,
               "text-red-500": isDragReject,
             })}
           />
           {isDragReject ? (
-            <p className="text-red-600 font-medium">Filformatet stöds inte</p>
+            <p className="text-red-400 font-medium">Filformatet stöds inte</p>
           ) : isDragActive ? (
-            <p className="text-primary-600 font-medium">Släpp filerna här...</p>
+            <p className="text-primary-400 font-medium">Släpp filerna här...</p>
           ) : (
             <>
-              <p className="text-gray-600 mb-1">
-                <span className="font-medium text-primary-600">Klicka för att välja</span>
+              <p className="text-gray-400 mb-1">
+                <span className="font-medium text-primary-400">Klicka för att välja</span>
                 {" "}eller dra och släpp flera filer
               </p>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-400">
                 MP3, WAV, M4A, OGG, FLAC, WebM (max 2 GB per fil)
               </p>
             </>
@@ -254,13 +254,13 @@ export function BatchUploadForm() {
       {queue.length > 0 && (
         <div className="p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2 className="text-lg font-semibold text-white">
               Filkö ({queue.length} filer)
             </h2>
             {(completedCount > 0 || failedCount > 0) && (
               <button
                 onClick={clearCompleted}
-                className="text-sm text-gray-500 hover:text-gray-700"
+                className="text-sm text-gray-400 hover:text-gray-300"
               >
                 Rensa avslutade
               </button>
@@ -274,23 +274,23 @@ export function BatchUploadForm() {
                 className={clsx(
                   "flex items-center gap-3 p-3 rounded-lg border",
                   {
-                    "bg-white border-gray-200": queuedFile.status === "pending",
-                    "bg-blue-50 border-blue-200": queuedFile.status === "uploading" || queuedFile.status === "processing",
-                    "bg-green-50 border-green-200": queuedFile.status === "completed",
-                    "bg-red-50 border-red-200": queuedFile.status === "failed",
+                    "bg-dark-800/50 border-white/10": queuedFile.status === "pending",
+                    "bg-blue-500/10 border-blue-500/20": queuedFile.status === "uploading" || queuedFile.status === "processing",
+                    "bg-green-500/10 border-green-500/20": queuedFile.status === "completed",
+                    "bg-red-500/10 border-red-500/20": queuedFile.status === "failed",
                   }
                 )}
               >
                 {getStatusIcon(queuedFile.status)}
 
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-gray-900 truncate">
+                  <p className="font-medium text-white truncate">
                     {queuedFile.file.name}
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-gray-400">
                     {formatFileSize(queuedFile.file.size)} • {getStatusText(queuedFile.status)}
                     {queuedFile.error && (
-                      <span className="text-red-600"> - {queuedFile.error}</span>
+                      <span className="text-red-400"> - {queuedFile.error}</span>
                     )}
                   </p>
                 </div>
@@ -298,7 +298,7 @@ export function BatchUploadForm() {
                 {queuedFile.status === "completed" && queuedFile.jobId && (
                   <Link
                     href={`/jobs/${queuedFile.jobId}`}
-                    className="text-sm text-primary-600 hover:text-primary-700 font-medium"
+                    className="text-sm text-primary-400 hover:text-primary-300 font-medium"
                   >
                     Visa
                   </Link>
@@ -307,7 +307,7 @@ export function BatchUploadForm() {
                 {queuedFile.status === "pending" && !isProcessing && (
                   <button
                     onClick={() => removeFile(queuedFile.id)}
-                    className="p-1 text-gray-400 hover:text-red-500"
+                    className="p-1 text-gray-500 hover:text-red-500"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -319,13 +319,13 @@ export function BatchUploadForm() {
           {/* Summary */}
           <div className="mt-4 flex gap-4 text-sm">
             {pendingCount > 0 && (
-              <span className="text-gray-600">{pendingCount} väntar</span>
+              <span className="text-gray-400">{pendingCount} väntar</span>
             )}
             {completedCount > 0 && (
-              <span className="text-green-600">{completedCount} klara</span>
+              <span className="text-green-400">{completedCount} klara</span>
             )}
             {failedCount > 0 && (
-              <span className="text-red-600">{failedCount} misslyckade</span>
+              <span className="text-red-400">{failedCount} misslyckade</span>
             )}
           </div>
         </div>
@@ -333,10 +333,10 @@ export function BatchUploadForm() {
 
       {/* Settings */}
       <div className="p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-1">
+        <h2 className="text-lg font-semibold text-white mb-1">
           2. Inställningar (gäller alla filer)
         </h2>
-        <p className="text-sm text-gray-500 mb-4">
+        <p className="text-sm text-gray-400 mb-4">
           Samma inställningar används för alla filer i kön
         </p>
 
@@ -347,18 +347,18 @@ export function BatchUploadForm() {
         />
 
         {/* Diarization toggle */}
-        <div className="mt-4 pt-4 border-t">
+        <div className="mt-4 pt-4 border-t border-white/10">
           <label className="flex items-center gap-3 cursor-pointer">
             <input
               type="checkbox"
               checked={enableDiarization}
               onChange={(e) => setEnableDiarization(e.target.checked)}
               disabled={isProcessing}
-              className="w-4 h-4 text-primary-600 rounded border-gray-300 focus:ring-primary-500"
+              className="w-4 h-4 text-primary-600 rounded border-white/20 focus:ring-primary-500"
             />
             <div>
-              <span className="font-medium text-gray-900">Talaridentifiering</span>
-              <p className="text-sm text-gray-500">
+              <span className="font-medium text-white">Talaridentifiering</span>
+              <p className="text-sm text-gray-400">
                 Identifiera olika talare i intervjun
               </p>
             </div>
@@ -366,26 +366,26 @@ export function BatchUploadForm() {
         </div>
 
         {/* Anonymization toggle */}
-        <div className="mt-4 pt-4 border-t">
+        <div className="mt-4 pt-4 border-t border-white/10">
           <label className="flex items-center gap-3 cursor-pointer">
             <input
               type="checkbox"
               checked={enableAnonymization}
               onChange={(e) => setEnableAnonymization(e.target.checked)}
               disabled={isProcessing}
-              className="w-4 h-4 text-primary-600 rounded border-gray-300 focus:ring-primary-500"
+              className="w-4 h-4 text-primary-600 rounded border-white/20 focus:ring-primary-500"
             />
             <div>
-              <span className="font-medium text-gray-900">Avidentifiering</span>
-              <p className="text-sm text-gray-500">
+              <span className="font-medium text-white">Avidentifiering</span>
+              <p className="text-sm text-gray-400">
                 Ta bort känslig information
               </p>
             </div>
           </label>
 
           {enableAnonymization && (
-            <div className="mt-3 ml-7 pl-3 border-l-2 border-blue-200 space-y-1">
-              <p className="text-xs text-gray-500 mb-2">Välj vilka typer:</p>
+            <div className="mt-3 ml-7 pl-3 border-l-2 border-blue-500/20 space-y-1">
+              <p className="text-xs text-gray-400 mb-2">Välj vilka typer:</p>
               {[
                 { key: "persons" as const, label: "Personnamn" },
                 { key: "locations" as const, label: "Platser" },
@@ -395,7 +395,7 @@ export function BatchUploadForm() {
               ].map((item) => (
                 <label
                   key={item.key}
-                  className="flex items-center gap-2 p-1.5 rounded hover:bg-blue-50 cursor-pointer"
+                  className="flex items-center gap-2 p-1.5 rounded hover:bg-blue-500/5 cursor-pointer"
                 >
                   <input
                     type="checkbox"
@@ -413,7 +413,7 @@ export function BatchUploadForm() {
       </div>
 
       {/* Actions */}
-      <div className="p-6 bg-gradient-to-r from-gray-50 to-white flex gap-3">
+      <div className="p-6 bg-gradient-to-r from-dark-900/50 to-transparent flex gap-3">
         <Button
           onClick={processQueue}
           size="lg"

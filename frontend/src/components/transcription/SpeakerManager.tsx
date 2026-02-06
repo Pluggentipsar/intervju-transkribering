@@ -82,24 +82,24 @@ export function SpeakerManager({ jobId, segments, className }: SpeakerManagerPro
   }
 
   return (
-    <div className={clsx("bg-white rounded-xl border", className)}>
+    <div className={clsx("bg-dark-800/50 rounded-xl border border-white/10", className)}>
       {/* Header - always visible */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors rounded-xl"
+        className="w-full flex items-center justify-between p-4 hover:bg-white/5 transition-colors rounded-xl"
       >
         <div className="flex items-center gap-3">
-          <Users className="w-5 h-5 text-indigo-600" />
+          <Users className="w-5 h-5 text-indigo-400" />
           <div className="text-left">
-            <h3 className="font-medium text-gray-900">Namnge talare</h3>
-            <p className="text-sm text-gray-500">
+            <h3 className="font-medium text-white">Namnge talare</h3>
+            <p className="text-sm text-gray-400">
               {speakers.length} {speakers.length === 1 ? "talare" : "talare"} identifierade
             </p>
           </div>
         </div>
         <ChevronDown
           className={clsx(
-            "w-5 h-5 text-gray-400 transition-transform",
+            "w-5 h-5 text-gray-500 transition-transform",
             isExpanded && "rotate-180"
           )}
         />
@@ -107,8 +107,8 @@ export function SpeakerManager({ jobId, segments, className }: SpeakerManagerPro
 
       {/* Expanded content */}
       {isExpanded && (
-        <div className="px-4 pb-4 border-t">
-          <p className="text-sm text-gray-500 py-3">
+        <div className="px-4 pb-4 border-t border-white/10">
+          <p className="text-sm text-gray-400 py-3">
             Klicka på en talare för att byta namn på alla deras segment.
           </p>
 
@@ -117,7 +117,7 @@ export function SpeakerManager({ jobId, segments, className }: SpeakerManagerPro
             {speakers.map((speaker) => (
               <div
                 key={speaker.name}
-                className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
+                className="flex items-center gap-3 p-3 bg-dark-900/50 rounded-lg"
               >
                 {editingSpeaker === speaker.name ? (
                   /* Editing mode */
@@ -130,14 +130,14 @@ export function SpeakerManager({ jobId, segments, className }: SpeakerManagerPro
                         if (e.key === "Enter") handleSaveEdit();
                         if (e.key === "Escape") handleCancelEdit();
                       }}
-                      className="flex-1 px-3 py-1.5 border rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                      className="flex-1 px-3 py-1.5 bg-dark-800 border border-white/20 rounded-lg text-sm text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                       autoFocus
                       disabled={mutation.isPending}
                     />
                     <button
                       onClick={handleSaveEdit}
                       disabled={mutation.isPending || !newName.trim()}
-                      className="p-1.5 text-green-600 hover:bg-green-100 rounded-lg transition-colors disabled:opacity-50"
+                      className="p-1.5 text-green-400 hover:bg-green-500/10 rounded-lg transition-colors disabled:opacity-50"
                       title="Spara"
                     >
                       <Check className="w-4 h-4" />
@@ -145,7 +145,7 @@ export function SpeakerManager({ jobId, segments, className }: SpeakerManagerPro
                     <button
                       onClick={handleCancelEdit}
                       disabled={mutation.isPending}
-                      className="p-1.5 text-gray-600 hover:bg-gray-200 rounded-lg transition-colors"
+                      className="p-1.5 text-gray-400 hover:bg-dark-700 rounded-lg transition-colors"
                       title="Avbryt"
                     >
                       <X className="w-4 h-4" />
@@ -154,15 +154,15 @@ export function SpeakerManager({ jobId, segments, className }: SpeakerManagerPro
                 ) : (
                   /* Display mode */
                   <>
-                    <span className="flex-1 font-medium text-gray-900">
+                    <span className="flex-1 font-medium text-white">
                       {speaker.name}
                     </span>
-                    <span className="text-xs text-gray-500">
+                    <span className="text-xs text-gray-400">
                       {speaker.segmentCount} segment
                     </span>
                     <button
                       onClick={() => handleStartEdit(speaker.name)}
-                      className="p-1.5 text-gray-500 hover:bg-gray-200 rounded-lg transition-colors"
+                      className="p-1.5 text-gray-400 hover:bg-dark-700 rounded-lg transition-colors"
                       title="Redigera namn"
                     >
                       <Edit3 className="w-4 h-4" />
@@ -175,7 +175,7 @@ export function SpeakerManager({ jobId, segments, className }: SpeakerManagerPro
 
           {/* Error message */}
           {mutation.isError && (
-            <div className="flex items-center gap-2 mt-3 p-3 bg-red-50 text-red-700 rounded-lg text-sm">
+            <div className="flex items-center gap-2 mt-3 p-3 bg-red-500/10 text-red-400 rounded-lg text-sm">
               <AlertCircle className="w-4 h-4 flex-shrink-0" />
               <span>
                 Något gick fel:{" "}
@@ -188,7 +188,7 @@ export function SpeakerManager({ jobId, segments, className }: SpeakerManagerPro
 
           {/* Success message */}
           {mutation.isSuccess && (
-            <div className="flex items-center gap-2 mt-3 p-3 bg-green-50 text-green-700 rounded-lg text-sm">
+            <div className="flex items-center gap-2 mt-3 p-3 bg-green-500/10 text-green-400 rounded-lg text-sm">
               <Check className="w-4 h-4 flex-shrink-0" />
               <span>
                 Talaren har bytt namn! {mutation.data.segments_updated} segment uppdaterade.

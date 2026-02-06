@@ -4,10 +4,6 @@ import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
 
-// Required for static export - dynamic pages are rendered client-side
-export function generateStaticParams() {
-  return [];
-}
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -76,13 +72,13 @@ function Word({
         "cursor-pointer px-0.5 py-0.5 rounded transition-all select-none",
         {
           // Excluded (strikethrough)
-          "line-through text-gray-400 bg-red-50": !word.included,
+          "line-through text-gray-500 bg-red-500/10": !word.included,
           // Selected for exclusion
-          "bg-red-200 text-red-800": isSelected && word.included,
+          "bg-red-500/20 text-red-300": isSelected && word.included,
           // Currently playing
-          "bg-primary-200 text-primary-900": isCurrentlyPlaying && word.included,
+          "bg-primary-500/20 text-primary-300": isCurrentlyPlaying && word.included,
           // Normal
-          "hover:bg-gray-100": word.included && !isSelected && !isCurrentlyPlaying,
+          "hover:bg-white/10": word.included && !isSelected && !isCurrentlyPlaying,
         }
       )}
     >
@@ -116,19 +112,19 @@ function SegmentEditor({
   return (
     <div
       className={clsx("p-4 rounded-lg border transition-all", {
-        "bg-red-50 border-red-200": allExcluded,
-        "bg-white border-gray-200": !allExcluded,
+        "bg-red-500/5 border-red-500/20": allExcluded,
+        "bg-dark-800/50 border-white/10": !allExcluded,
       })}
     >
-      <div className="flex items-center gap-2 mb-2 text-sm text-gray-500">
+      <div className="flex items-center gap-2 mb-2 text-sm text-gray-400">
         {segment.speaker && (
-          <span className="font-medium text-primary-600">{segment.speaker}</span>
+          <span className="font-medium text-primary-400">{segment.speaker}</span>
         )}
         <span>{formatTime(segment.start_time)}</span>
       </div>
 
       {hasWords ? (
-        <p className="text-lg leading-relaxed">
+        <p className="text-lg leading-relaxed text-gray-200">
           {segment.words.map((word, i) => (
             <span key={word.id}>
               <Word
@@ -145,7 +141,7 @@ function SegmentEditor({
           ))}
         </p>
       ) : (
-        <p className="text-lg text-gray-500 italic">
+        <p className="text-lg text-gray-400 italic">
           Inga ord-tidsstämplar tillgängliga för detta segment
         </p>
       )}
@@ -445,23 +441,23 @@ export default function AudioEditorPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-dark-950">
       {/* Header */}
-      <div className="bg-white border-b sticky top-0 z-10">
+      <div className="bg-dark-900/80 border-b border-white/10 sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Link
                 href={`/jobs/${jobId}`}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 hover:bg-white/10 rounded-lg transition-colors"
               >
-                <ArrowLeft className="w-5 h-5" />
+                <ArrowLeft className="w-5 h-5 text-gray-400" />
               </Link>
               <div>
-                <h1 className="text-lg font-bold text-gray-900">
+                <h1 className="text-lg font-bold text-white">
                   Redigera ljud
                 </h1>
-                <p className="text-sm text-gray-500">{transcript.file_name}</p>
+                <p className="text-sm text-gray-400">{transcript.file_name}</p>
               </div>
             </div>
 
@@ -479,28 +475,28 @@ export default function AudioEditorPage() {
       </div>
 
       {/* Stats bar */}
-      <div className="bg-white border-b">
+      <div className="bg-dark-900/50 border-b border-white/10">
         <div className="max-w-6xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between text-sm">
             <div className="flex items-center gap-6">
-              <span className="text-gray-600">
-                <span className="font-medium text-gray-900">{stats.totalWords}</span> ord totalt
+              <span className="text-gray-400">
+                <span className="font-medium text-white">{stats.totalWords}</span> ord totalt
               </span>
-              <span className="text-gray-600">
-                <span className="font-medium text-red-600">{stats.excludedWords}</span> borttagna
+              <span className="text-gray-400">
+                <span className="font-medium text-red-400">{stats.excludedWords}</span> borttagna
               </span>
-              <span className="text-gray-600">
-                Original: <span className="font-medium">{formatTime(transcript.duration)}</span>
+              <span className="text-gray-400">
+                Original: <span className="font-medium text-gray-200">{formatTime(transcript.duration)}</span>
               </span>
-              <span className="text-gray-600">
-                Redigerad: <span className="font-medium text-green-600">{formatTime(stats.estimatedDuration)}</span>
+              <span className="text-gray-400">
+                Redigerad: <span className="font-medium text-green-400">{formatTime(stats.estimatedDuration)}</span>
               </span>
             </div>
 
             <div className="flex items-center gap-3">
               {selectedWordIds.size > 0 && (
                 <div className="flex items-center gap-2">
-                  <span className="text-gray-500">
+                  <span className="text-gray-400">
                     {selectedWordIds.size} ord markerade
                   </span>
                   <Button
@@ -532,7 +528,7 @@ export default function AudioEditorPage() {
                   "inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors",
                   stats.excludedWords > 0
                     ? "bg-primary-500 text-white hover:bg-primary-600"
-                    : "bg-gray-200 text-gray-500 cursor-not-allowed pointer-events-none"
+                    : "bg-dark-700 text-gray-500 cursor-not-allowed pointer-events-none"
                 )}
               >
                 <Download className="w-4 h-4" />
@@ -544,7 +540,7 @@ export default function AudioEditorPage() {
       </div>
 
       {/* Audio player */}
-      <div className="bg-white border-b">
+      <div className="bg-dark-900/50 border-b border-white/10">
         <div className="max-w-6xl mx-auto px-4 py-4">
           <audio
             ref={audioRef}
@@ -578,9 +574,9 @@ export default function AudioEditorPage() {
                     setCurrentTime(time);
                   }
                 }}
-                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary-500"
+                className="w-full h-2 bg-dark-700 rounded-lg appearance-none cursor-pointer accent-primary-500"
               />
-              <div className="flex justify-between text-xs text-gray-500 mt-1">
+              <div className="flex justify-between text-xs text-gray-400 mt-1">
                 <span>{formatTime(currentTime)}</span>
                 <span>{formatTime(duration)}</span>
               </div>
@@ -593,8 +589,8 @@ export default function AudioEditorPage() {
               className={clsx(
                 "p-2 rounded-lg transition-colors",
                 showWaveform
-                  ? "bg-primary-100 text-primary-600"
-                  : "hover:bg-gray-100 text-gray-500"
+                  ? "bg-primary-500/10 text-primary-400"
+                  : "hover:bg-white/10 text-gray-400"
               )}
               title="Visa ljudvåg"
             >
@@ -618,13 +614,13 @@ export default function AudioEditorPage() {
 
               {/* Region selection controls */}
               {waveformSelectedRegion && selectedWordIds.size > 0 && (
-                <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="mt-4 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium text-blue-800">
+                      <p className="font-medium text-blue-300">
                         {selectedWordIds.size} ord markerade i region
                       </p>
-                      <p className="text-sm text-blue-700 mt-1">
+                      <p className="text-sm text-blue-400 mt-1">
                         {formatTime(waveformSelectedRegion.start)} - {formatTime(waveformSelectedRegion.end)}
                         {" "}({formatTime(waveformSelectedRegion.end - waveformSelectedRegion.start)})
                       </p>
@@ -653,13 +649,13 @@ export default function AudioEditorPage() {
 
               {/* Silence removal controls */}
               {detectedSilences.length > 0 && !waveformSelectedRegion && (
-                <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                <div className="mt-4 p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium text-amber-800">
+                      <p className="font-medium text-amber-300">
                         {detectedSilences.length} tysta partier hittade
                       </p>
-                      <p className="text-sm text-amber-700 mt-1">
+                      <p className="text-sm text-amber-400 mt-1">
                         Total tystnad:{" "}
                         {formatTime(
                           detectedSilences.reduce((sum, s) => sum + s.duration, 0)
@@ -679,7 +675,7 @@ export default function AudioEditorPage() {
                       >
                         Gå till första
                       </Button>
-                      <p className="text-xs text-amber-600 self-center max-w-[200px]">
+                      <p className="text-xs text-amber-400 self-center max-w-[200px]">
                         Tips: Shift+dra i vågformen för att markera region
                       </p>
                     </div>
@@ -693,8 +689,8 @@ export default function AudioEditorPage() {
 
       {/* Instructions */}
       <div className="max-w-6xl mx-auto px-4 py-4">
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-          <p className="text-sm text-blue-800">
+        <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4 mb-6">
+          <p className="text-sm text-blue-300">
             <strong>Tips:</strong> Klicka på ord för att markera dem, eller dra för att markera flera.
             Markerade ord kan tas bort med &quot;Ta bort&quot;-knappen. Borttagna ord visas med
             genomstrykning och kommer inte vara med i det redigerade ljudet.
