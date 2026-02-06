@@ -29,7 +29,9 @@ export function DownloadSection() {
           </div>
 
           <a
-            href="#"
+            href="https://github.com/Pluggentipsar/intervju-transkribering/releases/tag/v1.0.0"
+            target="_blank"
+            rel="noopener noreferrer"
             className="flex items-center justify-center gap-2 w-full px-8 py-4 bg-primary-500 hover:bg-primary-600 text-white font-semibold rounded-xl shadow-lg shadow-primary-500/25 transition-all hover:shadow-primary-500/40 text-lg"
           >
             Ladda ner

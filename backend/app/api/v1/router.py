@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter
 
-from app.api.v1 import anonymize, editor, export, jobs, models, templates, upload
+from app.api.v1 import anonymize, editor, export, jobs, models, settings, templates, upload
 
 api_router = APIRouter()
 
@@ -13,3 +13,4 @@ api_router.include_router(editor.router, prefix="/editor", tags=["editor"])
 api_router.include_router(models.router, prefix="/models", tags=["models"])
 api_router.include_router(anonymize.router, prefix="/anonymize", tags=["anonymize"])
 api_router.include_router(templates.router, prefix="/templates", tags=["templates"])
+api_router.include_router(settings.router, prefix="/settings", tags=["settings"])

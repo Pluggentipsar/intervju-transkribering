@@ -1,5 +1,25 @@
 """FastAPI application entry point."""
 
+# On Windows, HuggingFace Hub tries to create symlinks when downloading models.
+# This requires Developer Mode or admin privileges. Patch os.symlink to fall back
+# to copying the file when symlink creation fails.
+import os
+import sys
+os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
+if sys.platform == "win32":
+    _original_symlink = os.symlink
+    def _symlink_or_copy(src, dst, target_is_directory=False, **kwargs):
+        try:
+            _original_symlink(src, dst, target_is_directory=target_is_directory, **kwargs)
+        except OSError:
+            import shutil
+            src_resolved = os.path.join(os.path.dirname(dst), src) if not os.path.isabs(src) else src
+            if os.path.isdir(src_resolved):
+                shutil.copytree(src_resolved, dst, dirs_exist_ok=True)
+            else:
+                shutil.copy2(src_resolved, dst)
+    os.symlink = _symlink_or_copy
+
 # Patch torch.load BEFORE any other imports that might use torch
 # This fixes PyTorch 2.6+ compatibility with pyannote models
 def _patch_torch_load():
@@ -78,9 +98,20 @@ if _frontend_dir.is_dir():
     if _next_dir.is_dir():
         app.mount("/_next", StaticFiles(directory=_next_dir), name="next-static")
 
+    # Map dynamic route patterns to their pre-rendered placeholder paths.
+    # Next.js static export generates placeholder pages (using "_" as the param)
+    # that we serve for any actual dynamic ID.
+    import re
+    _dynamic_routes = [
+        (re.compile(r"^jobs/[^/]+/edit/?$"), _frontend_dir / "jobs" / "_" / "edit" / "index.html"),
+        (re.compile(r"^jobs/[^/]+/?$"), _frontend_dir / "jobs" / "_" / "index.html"),
+    ]
+
     @app.get("/{full_path:path}")
     async def serve_frontend(request: Request, full_path: str) -> FileResponse:
         """Serve frontend pages with SPA fallback for client-side routing."""
+        from fastapi.responses import Response
+
         # Try exact file (e.g. favicon.ico, robots.txt)
         file_path = _frontend_dir / full_path
         if file_path.is_file():
@@ -91,6 +122,16 @@ if _frontend_dir.is_dir():
         if index_path.is_file():
             return FileResponse(index_path)
 
-        # SPA fallback: serve root index.html for client-side routing
-        # (handles dynamic routes like /jobs/[id] that aren't pre-rendered)
+        # For requests with a file extension (e.g. .txt, .json, .js, .css),
+        # return 404 instead of the SPA fallback. This prevents Next.js RSC
+        # payload requests from getting HTML back, which breaks client navigation.
+        if "." in full_path.split("/")[-1]:
+            return Response(status_code=404)
+
+        # Try dynamic route placeholders (e.g. /jobs/{id} -> /jobs/_/index.html)
+        for pattern, placeholder_html in _dynamic_routes:
+            if pattern.match(full_path):
+                return FileResponse(placeholder_html)
+
+        # Final fallback: serve root index.html
         return FileResponse(_frontend_dir / "index.html")

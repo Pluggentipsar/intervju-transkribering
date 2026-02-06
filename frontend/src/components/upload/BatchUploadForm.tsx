@@ -4,7 +4,7 @@
 
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { clsx } from "clsx";
@@ -68,10 +68,21 @@ function generateId(): string {
 export function BatchUploadForm() {
   const [queue, setQueue] = useState<QueuedFile[]>([]);
   const [selectedModel, setSelectedModel] = useState("KBLab/kb-whisper-small");
-  const [enableDiarization, setEnableDiarization] = useState(true);
+  const [enableDiarization, setEnableDiarization] = useState(false);
+  const [hfTokenConfigured, setHfTokenConfigured] = useState<boolean | null>(null);
   const [enableAnonymization, setEnableAnonymization] = useState(false);
   const [nerEntityTypes, setNerEntityTypes] = useState<NerEntityTypesConfig>(DEFAULT_NER_ENTITY_TYPES);
   const [isProcessing, setIsProcessing] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/v1/settings/hf-token")
+      .then((res) => res.json())
+      .then((data) => {
+        setHfTokenConfigured(data.configured);
+        if (data.configured) setEnableDiarization(true);
+      })
+      .catch(() => setHfTokenConfigured(false));
+  }, []);
 
   const queryClient = useQueryClient();
 
@@ -348,19 +359,25 @@ export function BatchUploadForm() {
 
         {/* Diarization toggle */}
         <div className="mt-4 pt-4 border-t border-white/10">
-          <label className="flex items-center gap-3 cursor-pointer">
+          <label className={`flex items-center gap-3 ${hfTokenConfigured === false ? "opacity-60" : "cursor-pointer"}`}>
             <input
               type="checkbox"
               checked={enableDiarization}
               onChange={(e) => setEnableDiarization(e.target.checked)}
-              disabled={isProcessing}
+              disabled={isProcessing || hfTokenConfigured === false}
               className="w-4 h-4 text-primary-600 rounded border-white/20 focus:ring-primary-500"
             />
             <div>
               <span className="font-medium text-white">Talaridentifiering</span>
-              <p className="text-sm text-gray-400">
-                Identifiera olika talare i intervjun
-              </p>
+              {hfTokenConfigured === false ? (
+                <p className="text-sm text-amber-400">
+                  Kräver HuggingFace-token. Konfigurera under Inställningar (kugghjulet).
+                </p>
+              ) : (
+                <p className="text-sm text-gray-400">
+                  Identifiera olika talare i intervjun
+                </p>
+              )}
             </div>
           </label>
         </div>

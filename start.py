@@ -48,9 +48,16 @@ def start_server() -> None:
     print("[...] Startar server pa http://localhost:8000")
     print("      Tryck Ctrl+C for att avsluta.\n")
 
-    # Open browser after a short delay
+    # Open browser once the server is actually responding
     def open_browser() -> None:
-        sleep(1.5)
+        import urllib.request
+        import urllib.error
+        for _ in range(30):
+            try:
+                urllib.request.urlopen("http://localhost:8000/health", timeout=2)
+                break
+            except (urllib.error.URLError, OSError):
+                sleep(1)
         webbrowser.open("http://localhost:8000")
 
     import threading

@@ -74,6 +74,11 @@ export async function deleteJob(jobId: string): Promise<void> {
   await api.delete(`/jobs/${jobId}`);
 }
 
+export async function renameJob(jobId: string, name: string): Promise<Job> {
+  const response = await api.patch<Job>(`/jobs/${jobId}`, { name });
+  return response.data;
+}
+
 // Transcripts
 export async function getTranscript(jobId: string): Promise<TranscriptResponse> {
   const response = await api.get<TranscriptResponse>(`/jobs/${jobId}/transcript`);

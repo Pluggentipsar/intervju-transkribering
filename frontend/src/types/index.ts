@@ -6,6 +6,7 @@ export type JobStatus = "pending" | "processing" | "completed" | "failed" | "can
 
 export interface Job {
   id: string;
+  name: string | null;
   file_name: string;
   file_size: number;
   duration_seconds: number | null;
@@ -78,6 +79,7 @@ export interface SystemStatus {
 
 export interface JobCreateRequest {
   file_id: string;
+  name?: string;
   model: string;
   enable_diarization: boolean;
   enable_anonymization: boolean;

@@ -1,0 +1,489 @@
+"use client";
+
+import { useState, useMemo, useCallback } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
+
+import { formatDistanceToNow } from "date-fns";
+import { sv } from "date-fns/locale";
+import {
+  ArrowLeft,
+  Download,
+  Loader2,
+  CheckCircle,
+  XCircle,
+  Clock,
+  FileText,
+  FileCode,
+  ShieldAlert,
+  Subtitles,
+  FileDown,
+  Scissors,
+  Shield,
+} from "lucide-react";
+import Link from "next/link";
+import { getJob, getTranscript, getExportUrl, getAudioUrl, runAnonymization } from "@/services/api";
+import { Button } from "@/components/ui/Button";
+import { ProgressBar } from "@/components/ui/ProgressBar";
+import { TranscriptViewer } from "@/components/transcription/TranscriptViewer";
+import { AudioPlayer } from "@/components/transcription/AudioPlayer";
+import { SpeakerManager } from "@/components/transcription/SpeakerManager";
+import { SpeakerStatistics } from "@/components/transcription/SpeakerStatistics";
+import { WordCloud } from "@/components/transcription/WordCloud";
+import { TopicSegmentation } from "@/components/transcription/TopicSegmentation";
+import { EnhancedAnonymization } from "@/components/transcription/EnhancedAnonymization";
+import { AIPromptToolbar } from "@/components/transcription/AIPromptToolbar";
+import { useJobPolling } from "@/hooks/usePolling";
+import { exportToPdf } from "@/utils/pdfExport";
+
+const STEP_LABELS: Record<string, string> = {
+  queued: "Väntar i kö...",
+  starting: "Startar...",
+  loading_model: "Laddar AI-modell...",
+  transcribing: "Transkriberar...",
+  transcription_complete: "Transkribering klar, förbereder talaridentifiering...",
+  loading_diarization_model: "Laddar talaridentifieringsmodell...",
+  loading_audio_for_diarization: "Laddar ljud för talaridentifiering...",
+  diarizing: "Identifierar talare...",
+  assigning_speakers: "Tilldelar talare till segment...",
+  diarization_complete: "Talaridentifiering klar...",
+  diarization_failed: "Talaridentifiering misslyckades, fortsätter...",
+  saving_results: "Sparar resultat...",
+  completed: "Klart!",
+  failed: "Misslyckades",
+};
+
+function formatDuration(seconds: number | null): string {
+  if (!seconds) return "-";
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = Math.floor(seconds % 60);
+  if (hours > 0) {
+    return `${hours}h ${minutes}m ${secs}s`;
+  }
+  return `${minutes}m ${secs}s`;
+}
+
+export default function JobDetailClient() {
+  const router = useRouter();
+  const queryClient = useQueryClient();
+
+  // Read job ID from the URL pathname instead of useParams() because
+  // static export pre-renders with a placeholder ID that persists after hydration.
+  const [jobId] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      const parts = window.location.pathname.replace(/\/+$/, "").split("/");
+      return parts[parts.length - 1] || "";
+    }
+    return "";
+  });
+
+  // Poll job status when processing
+  const { data: job, isLoading: jobLoading } = useJobPolling(jobId || null);
+
+  // Fetch transcript when completed
+  const { data: transcript, isLoading: transcriptLoading } = useQuery({
+    queryKey: ["transcript", jobId],
+    queryFn: () => getTranscript(jobId),
+    enabled: job?.status === "completed",
+  });
+
+  // Mutation for running anonymization
+  const anonymizationMutation = useMutation({
+    mutationFn: () => runAnonymization(jobId),
+    onSuccess: () => {
+      // Refetch transcript to get anonymized text
+      queryClient.invalidateQueries({ queryKey: ["transcript", jobId] });
+      queryClient.invalidateQueries({ queryKey: ["job", jobId] });
+    },
+  });
+
+  // Check if transcript has anonymized content
+  const hasAnonymizedContent = useMemo(() => {
+    return transcript?.segments.some(
+      (s) => s.anonymized_text && s.anonymized_text !== s.text
+    ) ?? false;
+  }, [transcript]);
+
+  // State for showing anonymized text (default true if available)
+  const [showAnonymized, setShowAnonymized] = useState(true);
+
+  // State for tracking if enhanced anonymization has been run
+  const [hasEnhancedResult, setHasEnhancedResult] = useState(false);
+
+  // Audio player state
+  const [currentAudioTime, setCurrentAudioTime] = useState(0);
+  const [seekToTime, setSeekToTime] = useState<number | null>(null);
+
+  // Handle segment click to seek audio
+  const handleSegmentClick = useCallback((time: number) => {
+    setSeekToTime(time);
+    // Reset seekToTime after a short delay to allow re-clicking same segment
+    setTimeout(() => setSeekToTime(null), 100);
+  }, []);
+
+  // Handle PDF export
+  const handlePdfExport = useCallback(() => {
+    if (!job || !transcript) return;
+
+    exportToPdf({
+      fileName: job.file_name,
+      segments: transcript.segments,
+      showAnonymized: showAnonymized && hasAnonymizedContent,
+      metadata: {
+        duration: job.duration_seconds,
+        speakerCount: transcript.metadata.speaker_count,
+        wordCount: transcript.metadata.word_count,
+        segmentCount: transcript.metadata.segment_count,
+        createdAt: job.created_at,
+      },
+    });
+  }, [job, transcript, showAnonymized, hasAnonymizedContent]);
+
+  // Compute full transcript text for AI tools
+  const transcriptText = useMemo(() => {
+    if (!transcript) return "";
+    return transcript.segments
+      .map((segment) => {
+        const text = showAnonymized && segment.anonymized_text
+          ? segment.anonymized_text
+          : segment.text;
+        const speaker = segment.speaker ? `[${segment.speaker}]: ` : "";
+        return `${speaker}${text}`;
+      })
+      .join("\n\n");
+  }, [transcript, showAnonymized]);
+
+  if (jobLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="w-8 h-8 animate-spin text-primary-500" />
+      </div>
+    );
+  }
+
+  if (!job) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-red-600 mb-4">Jobbet hittades inte</p>
+        <Link href="/jobs" className="text-primary-600 hover:underline">
+          Tillbaka till listan
+        </Link>
+      </div>
+    );
+  }
+
+  const isProcessing = job.status === "pending" || job.status === "processing";
+  const isComplete = job.status === "completed";
+  const isFailed = job.status === "failed";
+
+  return (
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-24 pb-16">
+      {/* Header */}
+      <div className="flex items-center gap-4 mb-6">
+        <button
+          onClick={() => router.back()}
+          className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+        >
+          <ArrowLeft className="w-5 h-5 text-gray-400" />
+        </button>
+        <div className="flex-1">
+          <h1 className="text-xl font-bold text-white truncate">
+            {job.name || job.file_name}
+          </h1>
+          <p className="text-sm text-gray-400">
+            Skapad{" "}
+            {formatDistanceToNow(new Date(job.created_at), {
+              addSuffix: true,
+              locale: sv,
+            })}
+          </p>
+        </div>
+
+        {/* Export buttons */}
+        {isComplete && (
+          <div className="flex gap-2 flex-wrap">
+            <a
+              href={getExportUrl(jobId, "txt", hasAnonymizedContent && showAnonymized)}
+              download
+              className="inline-flex items-center gap-2 px-3 py-2 bg-dark-800 border border-white/10 rounded-lg hover:bg-dark-700 transition-colors text-sm text-gray-300"
+            >
+              <FileText className="w-4 h-4" />
+              Text
+            </a>
+            <a
+              href={getExportUrl(jobId, "md", hasAnonymizedContent && showAnonymized)}
+              download
+              className="inline-flex items-center gap-2 px-3 py-2 bg-dark-800 border border-white/10 rounded-lg hover:bg-dark-700 transition-colors text-sm text-gray-300"
+            >
+              <FileCode className="w-4 h-4" />
+              Markdown
+            </a>
+            <a
+              href={getExportUrl(jobId, "srt", hasAnonymizedContent && showAnonymized)}
+              download
+              className="inline-flex items-center gap-2 px-3 py-2 bg-dark-800 border border-white/10 rounded-lg hover:bg-dark-700 transition-colors text-sm text-gray-300"
+            >
+              <Subtitles className="w-4 h-4" />
+              SRT
+            </a>
+            <a
+              href={getExportUrl(jobId, "vtt", hasAnonymizedContent && showAnonymized)}
+              download
+              className="inline-flex items-center gap-2 px-3 py-2 bg-dark-800 border border-white/10 rounded-lg hover:bg-dark-700 transition-colors text-sm text-gray-300"
+            >
+              <Subtitles className="w-4 h-4" />
+              VTT
+            </a>
+            <a
+              href={getExportUrl(jobId, "json", hasAnonymizedContent && showAnonymized)}
+              download
+              className="inline-flex items-center gap-2 px-3 py-2 bg-dark-800 border border-white/10 rounded-lg hover:bg-dark-700 transition-colors text-sm text-gray-300"
+            >
+              <Download className="w-4 h-4" />
+              JSON
+            </a>
+            <button
+              onClick={handlePdfExport}
+              className="inline-flex items-center gap-2 px-3 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors text-sm font-medium"
+            >
+              <FileDown className="w-4 h-4" />
+              PDF
+            </button>
+            <Link
+              href={`/jobs/${jobId}/edit`}
+              className="inline-flex items-center gap-2 px-3 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors text-sm font-medium"
+            >
+              <Scissors className="w-4 h-4" />
+              Redigera ljud
+            </Link>
+          </div>
+        )}
+      </div>
+
+      {/* Status card for processing/failed */}
+      {(isProcessing || isFailed) && (
+        <div className="bg-dark-800/50 rounded-xl border border-white/10 p-6 mb-6">
+          <div className="flex items-center gap-3 mb-4">
+            {isProcessing && (
+              <>
+                <Loader2 className="w-6 h-6 animate-spin text-blue-400" />
+                <span className="font-medium text-white">
+                  Transkriberar...
+                </span>
+              </>
+            )}
+            {isFailed && (
+              <>
+                <XCircle className="w-6 h-6 text-red-400" />
+                <span className="font-medium text-red-400">
+                  Transkriberingen misslyckades
+                </span>
+              </>
+            )}
+          </div>
+
+          {isProcessing && (
+            <ProgressBar
+              progress={job.progress}
+              currentStep={job.current_step ?? undefined}
+              stepLabel={STEP_LABELS[job.current_step ?? ""] ?? job.current_step ?? undefined}
+              variant="detailed"
+            />
+          )}
+
+          {isFailed && job.error_message && (
+            <p className="text-sm text-red-400 mt-2">{job.error_message}</p>
+          )}
+        </div>
+      )}
+
+      {/* Metadata card */}
+      {isComplete && transcript && (
+        <div className="bg-dark-800/50 rounded-xl border border-white/10 p-6 mb-6">
+          <div className="flex items-center gap-3 mb-4">
+            <CheckCircle className="w-6 h-6 text-green-400" />
+            <span className="font-medium text-white">
+              Transkribering klar
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div>
+              <p className="text-sm text-gray-400">Längd</p>
+              <p className="font-medium text-gray-200">{formatDuration(job.duration_seconds)}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-400">Segment</p>
+              <p className="font-medium text-gray-200">{transcript.metadata.segment_count}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-400">Ord</p>
+              <p className="font-medium text-gray-200">{transcript.metadata.word_count}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-400">Talare</p>
+              <p className="font-medium text-gray-200">
+                {transcript.metadata.speaker_count || "-"}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Speaker management panel */}
+      {isComplete && transcript && transcript.metadata.speaker_count > 0 && (
+        <SpeakerManager
+          jobId={jobId}
+          segments={transcript.segments}
+          className="mb-6"
+        />
+      )}
+
+      {/* Speaker statistics */}
+      {isComplete && transcript && transcript.metadata.speaker_count > 0 && (
+        <SpeakerStatistics
+          segments={transcript.segments}
+          className="mb-6"
+        />
+      )}
+
+      {/* Word cloud */}
+      {isComplete && transcript && (
+        <WordCloud
+          segments={transcript.segments}
+          showAnonymized={showAnonymized && hasAnonymizedContent}
+          className="mb-6"
+        />
+      )}
+
+      {/* Topic segmentation */}
+      {isComplete && transcript && (
+        <TopicSegmentation
+          segments={transcript.segments}
+          showAnonymized={showAnonymized && hasAnonymizedContent}
+          className="mb-6"
+          onTopicClick={handleSegmentClick}
+        />
+      )}
+
+      {/* Run anonymization panel - show when no anonymization exists */}
+      {isComplete && transcript && !hasAnonymizedContent && (
+        <div className="bg-dark-800/50 rounded-xl border border-white/10 p-6 mb-6">
+          <div className="flex items-start gap-4">
+            <div className="p-3 bg-blue-500/10 rounded-lg">
+              <Shield className="w-6 h-6 text-blue-400" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-medium text-white">
+                Kör avidentifiering
+              </h3>
+              <p className="text-sm text-gray-400 mt-1">
+                Transkriptet har inte avidentifierats. Du kan köra NER-baserad avidentifiering
+                för att automatiskt ersätta personnamn, platser och organisationer med taggar.
+              </p>
+              <div className="mt-4">
+                <button
+                  onClick={() => anonymizationMutation.mutate()}
+                  disabled={anonymizationMutation.isPending}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50"
+                >
+                  {anonymizationMutation.isPending ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Kör avidentifiering...
+                    </>
+                  ) : (
+                    <>
+                      <Shield className="w-4 h-4" />
+                      Kör avidentifiering
+                    </>
+                  )}
+                </button>
+                {anonymizationMutation.isSuccess && (
+                  <span className="ml-3 text-sm text-green-400">
+                    Avidentifiering klar! {anonymizationMutation.data?.segments_anonymized} segment uppdaterade.
+                  </span>
+                )}
+                {anonymizationMutation.isError && (
+                  <span className="ml-3 text-sm text-red-400">
+                    Fel vid avidentifiering. Försök igen.
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Enhanced anonymization panel */}
+      {isComplete && transcript && (
+        <EnhancedAnonymization
+          jobId={jobId}
+          hasNerAnonymization={transcript.segments.some(
+            (s) => s.anonymized_text && s.anonymized_text !== s.text
+          )}
+          className="mb-6"
+          onHasEnhancedResult={setHasEnhancedResult}
+        />
+      )}
+
+      {/* Banner when enhanced anonymization has been run */}
+      {hasEnhancedResult && (
+        <div className="flex items-start gap-3 p-4 mb-6 bg-amber-500/10 border border-amber-500/20 rounded-xl">
+          <ShieldAlert className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="font-medium text-amber-300">
+              Förstärkt avidentifiering är aktiv
+            </p>
+            <p className="text-sm text-amber-400/80 mt-1">
+              Du har kört förstärkt avidentifiering. Använd knapparna &quot;Kopiera text&quot; och &quot;Ladda ner&quot;
+              i panelen ovan för att exportera det förstärkta resultatet. Export-knapparna i sidhuvudet
+              exporterar endast den ursprungliga NER-avidentifieringen.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Audio player */}
+      {isComplete && transcript && (
+        <AudioPlayer
+          audioUrl={getAudioUrl(jobId)}
+          duration={job.duration_seconds ?? undefined}
+          className="mb-6"
+          onTimeUpdate={setCurrentAudioTime}
+          seekToTime={seekToTime}
+        />
+      )}
+
+      {/* Transcript viewer */}
+      {isComplete && transcript && (
+        <div className="bg-dark-800/50 rounded-xl border border-white/10 p-6">
+          <h2 className="text-lg font-medium text-white mb-4">
+            Transkription
+          </h2>
+          <TranscriptViewer
+            segments={transcript.segments}
+            className="max-h-[600px]"
+            showAnonymized={showAnonymized}
+            onShowAnonymizedChange={setShowAnonymized}
+            currentAudioTime={currentAudioTime}
+            onSegmentClick={handleSegmentClick}
+          />
+        </div>
+      )}
+
+      {/* Loading transcript */}
+      {isComplete && transcriptLoading && (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-primary-500" />
+        </div>
+      )}
+
+      {/* AI Prompt Toolbar */}
+      {isComplete && transcript && transcriptText && (
+        <AIPromptToolbar transcriptText={transcriptText} />
+      )}
+    </div>
+  );
+}

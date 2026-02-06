@@ -1,6 +1,8 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useState, useRef, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
 import { sv } from "date-fns/locale";
 import {
@@ -12,9 +14,13 @@ import {
   Plus,
   Users,
   FileText,
+  Pencil,
+  Trash2,
+  Check,
+  X,
 } from "lucide-react";
 import Link from "next/link";
-import { listJobs } from "@/services/api";
+import { listJobs, renameJob, deleteJob } from "@/services/api";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { Button } from "@/components/ui/Button";
 import { GlobalSearch } from "@/components/search/GlobalSearch";
@@ -74,12 +80,91 @@ function formatFileSize(bytes: number): string {
 function JobCard({ job }: { job: Job }) {
   const config = STATUS_CONFIG[job.status];
   const StatusIcon = config.icon;
+  const queryClient = useQueryClient();
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [editName, setEditName] = useState(job.name || job.file_name);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [isEditing]);
+
+  const renameMutation = useMutation({
+    mutationFn: (name: string) => renameJob(job.id, name),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["jobs"] });
+      setIsEditing(false);
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: () => deleteJob(job.id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["jobs"] });
+    },
+  });
+
+  const handleSaveRename = () => {
+    const trimmed = editName.trim();
+    if (trimmed && trimmed !== (job.name || job.file_name)) {
+      renameMutation.mutate(trimmed);
+    } else {
+      setIsEditing(false);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleSaveRename();
+    } else if (e.key === "Escape") {
+      setEditName(job.name || job.file_name);
+      setIsEditing(false);
+    }
+  };
+
+  const displayName = job.name || job.file_name;
+  const router = useRouter();
 
   return (
-    <Link
-      href={`/jobs/${job.id}`}
-      className="group block bg-dark-800/50 rounded-xl border border-white/10 hover:border-primary-500/30 hover:shadow-md hover:shadow-primary-500/5 transition-all"
+    <div
+      className="group relative bg-dark-800/50 rounded-xl border border-white/10 hover:border-primary-500/30 hover:shadow-md hover:shadow-primary-500/5 transition-all cursor-pointer"
+      onClick={() => {
+        if (!isEditing && !showDeleteConfirm) {
+          router.push(`/jobs/${job.id}`);
+        }
+      }}
     >
+      {/* Delete confirmation overlay */}
+      {showDeleteConfirm && (
+        <div className="absolute inset-0 z-10 bg-dark-900/95 rounded-xl flex items-center justify-center p-4">
+          <div className="text-center">
+            <p className="text-sm text-gray-300 mb-3">
+              Ta bort <span className="font-medium text-white">{displayName}</span>?
+            </p>
+            <div className="flex items-center justify-center gap-2">
+              <button
+                onClick={(e) => { e.stopPropagation(); setShowDeleteConfirm(false); }}
+                className="px-3 py-1.5 text-xs text-gray-300 bg-dark-700 rounded-lg hover:bg-dark-600 transition-colors"
+              >
+                Avbryt
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); deleteMutation.mutate(); }}
+                disabled={deleteMutation.isPending}
+                className="px-3 py-1.5 text-xs text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+              >
+                {deleteMutation.isPending ? "Tar bort..." : "Ta bort"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="p-4 sm:p-5">
         <div className="flex items-start gap-3">
           <div className="w-10 h-10 bg-dark-700 rounded-lg flex items-center justify-center group-hover:bg-primary-500/10 transition-colors flex-shrink-0">
@@ -88,16 +173,75 @@ function JobCard({ job }: { job: Job }) {
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between gap-3 mb-1">
-              <h3 className="font-medium text-white truncate text-sm">
-                {job.file_name}
-              </h3>
-              <div
-                className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${config.color} ${config.bgColor}`}
-              >
-                <StatusIcon
-                  className={`w-3 h-3 ${job.status === "processing" ? "animate-spin" : ""}`}
-                />
-                <span>{config.label}</span>
+              {isEditing ? (
+                <div
+                  className="flex items-center gap-1 flex-1 min-w-0"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    onBlur={handleSaveRename}
+                    className="flex-1 min-w-0 bg-dark-700 border border-primary-500/50 rounded px-2 py-0.5 text-sm text-white focus:outline-none focus:border-primary-400"
+                  />
+                  <button
+                    onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); handleSaveRename(); }}
+                    className="p-1 text-green-400 hover:bg-green-500/10 rounded transition-colors"
+                  >
+                    <Check className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setEditName(displayName);
+                      setIsEditing(false);
+                    }}
+                    className="p-1 text-gray-400 hover:bg-white/10 rounded transition-colors"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                  <h3 className="font-medium text-white truncate text-sm">
+                    {displayName}
+                  </h3>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditName(displayName);
+                      setIsEditing(true);
+                    }}
+                    className="p-1.5 text-gray-400 hover:text-primary-400 hover:bg-white/10 rounded transition-colors flex-shrink-0"
+                    title="Byt namn"
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <div
+                  className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${config.color} ${config.bgColor}`}
+                >
+                  <StatusIcon
+                    className={`w-3 h-3 ${job.status === "processing" ? "animate-spin" : ""}`}
+                  />
+                  <span>{config.label}</span>
+                </div>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowDeleteConfirm(true);
+                  }}
+                  className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                  title="Ta bort"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
               </div>
             </div>
 
@@ -148,7 +292,7 @@ function JobCard({ job }: { job: Job }) {
           </div>
         </div>
       </div>
-    </Link>
+    </div>
   );
 }
 

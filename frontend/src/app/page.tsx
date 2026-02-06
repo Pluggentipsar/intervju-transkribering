@@ -105,7 +105,7 @@ function RecentJobRow({ job }: { job: Job }) {
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-white truncate">
-          {job.file_name}
+          {job.name || job.file_name}
         </p>
         <p className="text-xs text-gray-400 mt-0.5">
           {formatDistanceToNow(new Date(job.created_at), {
