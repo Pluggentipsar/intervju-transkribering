@@ -52,15 +52,16 @@ def check_prerequisites() -> None:
 
 
 def build_frontend() -> None:
-    """Build frontend if not already built."""
+    """Build frontend as static export for local app mode."""
     if (FRONTEND_OUT / "index.html").is_file():
         print("[OK] Frontend redan byggd.")
         return
 
-    print("[...] Bygger frontend...")
+    print("[...] Bygger frontend (lokal app-lage)...")
     npm = "npm.cmd" if sys.platform == "win32" else "npm"
+    env = {**os.environ, "BUILD_MODE": "local", "NEXT_PUBLIC_APP_MODE": "local"}
     subprocess.run([npm, "install"], cwd=FRONTEND_DIR, check=True)
-    subprocess.run([npm, "run", "build"], cwd=FRONTEND_DIR, check=True)
+    subprocess.run([npm, "run", "build"], cwd=FRONTEND_DIR, env=env, check=True)
     print("[OK] Frontend byggd.")
 
 

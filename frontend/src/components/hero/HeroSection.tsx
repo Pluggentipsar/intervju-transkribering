@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Mic, ArrowRight, Shield, Users, Lock } from "lucide-react";
+import { Mic, ArrowRight, Shield, Users, Lock, Download } from "lucide-react";
 import { AudioWaveAnimation } from "./AudioWaveAnimation";
 import { Button } from "@/components/ui/Button";
 
@@ -30,7 +30,7 @@ export function HeroSection() {
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary-500/10 border border-primary-500/20 rounded-full text-primary-300 text-sm mb-8 animate-fade-in">
             <Mic className="w-4 h-4" />
-            <span>Sveriges bästa AI för svenska</span>
+            <span>Sveriges basta AI for svenska</span>
           </div>
 
           {/* Main heading */}
@@ -54,8 +54,8 @@ export function HeroSection() {
           {/* Description */}
           <p className="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto mb-10 animate-fade-in" style={{ animationDelay: "0.3s" }}>
             TystText omvandlar dina ljudfiler till text med KB Whisper,
-            identifierar talare automatiskt och anonymiserar känslig information
-            — allt lokalt på din egen dator.
+            identifierar talare automatiskt och anonymiserar kanslig information
+            — allt lokalt pa din egen dator.
           </p>
 
           {/* Feature pills */}
@@ -78,42 +78,40 @@ export function HeroSection() {
             </div>
           </div>
 
-          {/* CTA buttons */}
+          {/* CTA buttons — marketing mode: download, local mode: upload */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in" style={{ animationDelay: "0.7s" }}>
-            <Link href="/upload">
+            <a href="#download">
               <Button
                 size="lg"
                 className="w-full sm:w-auto bg-primary-500 hover:bg-primary-600 text-white shadow-lg shadow-primary-500/25 hover:shadow-primary-500/40 transition-all"
               >
-                Starta transkribering
-                <ArrowRight className="w-5 h-5 ml-2" />
+                <Download className="w-5 h-5 mr-2" />
+                Ladda ner gratis
               </Button>
-            </Link>
-            <Link href="/anonymize">
+            </a>
+            <a href="#guide">
               <Button
                 size="lg"
-                className="w-full sm:w-auto bg-amber-500 hover:bg-amber-600 text-white shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 transition-all"
+                className="w-full sm:w-auto bg-white/10 hover:bg-white/20 text-white border border-white/20 transition-all"
               >
-                <Shield className="w-5 h-5 mr-2" />
-                Avidentifiera text
+                Sa funkar det
+                <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
-            </Link>
+            </a>
           </div>
 
-          {/* Secondary link */}
-          <div className="mt-6 animate-fade-in" style={{ animationDelay: "0.9s" }}>
-            <Link
-              href="/jobs"
-              className="text-gray-400 hover:text-white text-sm transition-colors"
-            >
-              Eller se dina befintliga transkriptioner →
-            </Link>
+          {/* Trust line */}
+          <div className="mt-8 animate-fade-in" style={{ animationDelay: "0.9s" }}>
+            <p className="text-gray-500 text-sm flex items-center justify-center gap-2">
+              <Lock className="w-3.5 h-3.5 text-green-400" />
+              Gratis, oppet och 100% lokalt — ingen data lamnar din dator
+            </p>
           </div>
         </div>
       </div>
 
       {/* Bottom gradient fade */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-gray-50 to-transparent" />
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white to-transparent" />
     </section>
   );
 }

@@ -23,15 +23,23 @@ def run(cmd: list[str], cwd: Path) -> None:
 
 
 def build_frontend() -> None:
-    """Build the Next.js frontend as static files."""
+    """Build the Next.js frontend as static files for local app mode."""
     if STATIC_DIR.is_dir() and (STATIC_DIR / "index.html").is_file():
         print("[OK] Frontend redan byggd. Ta bort frontend/out/ for att bygga om.")
         return
 
-    print("[...] Bygger frontend...")
+    print("[...] Bygger frontend (lokal app-lage)...")
     npm = "npm.cmd" if sys.platform == "win32" else "npm"
+    import os
+    env = {**os.environ, "BUILD_MODE": "local", "NEXT_PUBLIC_APP_MODE": "local"}
     run([npm, "install"], cwd=FRONTEND_DIR)
-    run([npm, "run", "build"], cwd=FRONTEND_DIR)
+
+    print(f"  > {npm} run build")
+    result = subprocess.run([npm, "run", "build"], cwd=FRONTEND_DIR, env=env)
+    if result.returncode != 0:
+        print(f"Kommandot misslyckades med kod {result.returncode}")
+        sys.exit(1)
+
     print("[OK] Frontend byggd.")
 
 
