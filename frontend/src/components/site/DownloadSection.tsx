@@ -14,8 +14,8 @@ export function DownloadSection() {
           Ladda ner TystText
         </h2>
         <p className="text-gray-300 text-lg max-w-2xl mx-auto mb-10">
-          En enda fil. Dubbelklicka och borja transkribera. Ingen installation,
-          inget konto, ingen data som lamnar din dator.
+          En enda fil. Dubbelklicka och börja transkribera. Ingen installation,
+          inget konto, ingen data som lämnar din dator.
         </p>
 
         {/* Download card */}
@@ -23,7 +23,7 @@ export function DownloadSection() {
           <div className="flex items-center justify-center gap-3 mb-6">
             <Download className="w-8 h-8 text-primary-400" />
             <div className="text-left">
-              <p className="font-semibold text-lg">TystText for Windows</p>
+              <p className="font-semibold text-lg">TystText för Windows</p>
               <p className="text-sm text-gray-400">Windows 10/11 — ca 2 GB</p>
             </div>
           </div>
@@ -39,7 +39,7 @@ export function DownloadSection() {
           </a>
 
           <p className="text-xs text-gray-500 mt-4">
-            Forsta gangen? Lasningen av AI-modeller tar nagra minuter vid forsta start.
+            Första gången? Laddningen av AI-modeller tar några minuter vid första start.
           </p>
         </div>
 
@@ -51,7 +51,7 @@ export function DownloadSection() {
           </div>
           <div className="flex items-center gap-2">
             <Monitor className="w-4 h-4 text-primary-400" />
-            Oppet och gratis
+            Öppet och gratis
           </div>
         </div>
       </div>

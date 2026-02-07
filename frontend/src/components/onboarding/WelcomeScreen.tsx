@@ -39,12 +39,12 @@ const steps = [
   {
     icon: Upload,
     title: "Ladda upp",
-    desc: "Dra och slapp en ljudfil — MP3, WAV, M4A",
+    desc: "Dra och släpp en ljudfil — MP3, WAV, M4A",
   },
   {
     icon: Cpu,
     title: "AI transkriberar",
-    desc: "KB Whisper, optimerad for svenska",
+    desc: "KB Whisper, optimerad för svenska",
   },
   {
     icon: Users,
@@ -93,14 +93,14 @@ export function WelcomeScreen({ onComplete }: WelcomeScreenProps) {
 
             {/* Description */}
             <p className="text-lg text-gray-300 max-w-md mx-auto mb-4">
-              Transkribera intervjuer, identifiera talare och avidentifiera kanslig
-              information — allt lokalt pa din dator.
+              Transkribera intervjuer, identifiera talare och avidentifiera känslig
+              information — allt lokalt på din dator.
             </p>
 
             {/* Privacy badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-500/10 border border-green-500/20 rounded-full text-green-300 text-sm mb-10">
               <Lock className="w-4 h-4" />
-              Ingen data lamnar din dator
+              Ingen data lämnar din dator
             </div>
 
             <div>
@@ -121,10 +121,10 @@ export function WelcomeScreen({ onComplete }: WelcomeScreenProps) {
             <div className="text-center mb-10">
               <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary-500/10 border border-primary-500/20 rounded-full text-primary-300 text-xs font-medium mb-4">
                 <Sparkles className="w-3 h-3" />
-                Sa har funkar det
+                Så här funkar det
               </div>
               <h2 className="text-2xl font-bold text-white">
-                Fran ljudfil till fardig text
+                Från ljudfil till färdig text
               </h2>
             </div>
 
@@ -161,7 +161,7 @@ export function WelcomeScreen({ onComplete }: WelcomeScreenProps) {
                 onClick={onComplete}
                 className="inline-flex items-center gap-2 px-8 py-3 bg-primary-500 hover:bg-primary-600 text-white font-medium rounded-xl shadow-lg shadow-primary-500/25 transition-all hover:shadow-primary-500/40"
               >
-                Kom igang
+                Kom igång
                 <ArrowRight className="w-5 h-5" />
               </button>
             </div>

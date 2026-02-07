@@ -32,7 +32,7 @@ const STATUS_CONFIG: Record<
 > = {
   pending: {
     icon: Clock,
-    label: "Vantar",
+    label: "Väntar",
     color: "text-gray-400",
     bgColor: "bg-gray-500/10",
   },
@@ -363,10 +363,10 @@ export default function JobsPage() {
         <div className="text-center py-12 bg-dark-800/50 border border-white/10 rounded-xl">
           <FileAudio className="w-8 h-8 text-gray-500 mx-auto mb-2" />
           <h3 className="font-semibold text-white mb-1">
-            Inga transkriptioner an
+            Inga transkriptioner än
           </h3>
           <p className="text-sm text-gray-400 mb-4">
-            Ladda upp din forsta ljudfil for att komma igang
+            Ladda upp din första ljudfil för att komma igång
           </p>
           <Link href="/upload">
             <Button size="sm">

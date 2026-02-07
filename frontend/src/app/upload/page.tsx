@@ -20,7 +20,7 @@ export default function UploadPage() {
           Ny transkription
         </h1>
         <p className="text-sm text-gray-400">
-          Ladda upp ljudfiler sa transkriberar vi dem med KB Whisper
+          Ladda upp ljudfiler så transkriberar vi dem med KB Whisper
         </p>
       </div>
 

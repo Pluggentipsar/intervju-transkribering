@@ -117,7 +117,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             </div>
             <div className="relative flex items-start justify-between">
               <div>
-                <h1 className="text-xl font-bold">Installningar</h1>
+                <h1 className="text-xl font-bold">Inställningar</h1>
                 <p className="text-gray-400 text-sm mt-1">
                   Konfigurera talaridentifiering och HuggingFace-token
                 </p>
@@ -205,11 +205,11 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     Aktivera talaridentifiering
                   </h3>
                   <p className="text-sm text-gray-400 mb-3">
-                    For att identifiera vem som pratar behover du:
+                    För att identifiera vem som pratar behöver du:
                   </p>
                   <ol className="text-sm text-gray-300 list-decimal list-inside space-y-2 mb-3">
                     <li>
-                      Skapa ett gratis konto pa{" "}
+                      Skapa ett gratis konto på{" "}
                       <a
                         href="https://huggingface.co/join"
                         target="_blank"
@@ -220,7 +220,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                       </a>
                     </li>
                     <li>
-                      Godkann anvandningsvillkoren for{" "}
+                      Godkänn användningsvillkoren för{" "}
                       <a
                         href="https://huggingface.co/pyannote/speaker-diarization-3.1"
                         target="_blank"
@@ -231,7 +231,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                       </a>
                     </li>
                     <li>
-                      Godkann aven{" "}
+                      Godkänn även{" "}
                       <a
                         href="https://huggingface.co/pyannote/segmentation-3.0"
                         target="_blank"
@@ -249,7 +249,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                         rel="noopener noreferrer"
                         className="text-blue-400 hover:underline inline-flex items-center gap-1"
                       >
-                        kontoinstellningar <ExternalLink className="w-3 h-3" />
+                        kontoinställningar <ExternalLink className="w-3 h-3" />
                       </a>
                     </li>
                     <li>Klistra in token i faltet ovan och klicka Spara</li>
@@ -268,7 +268,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               onClick={onClose}
               className="w-full py-2.5 bg-dark-700 hover:bg-dark-600 text-gray-300 rounded-xl font-medium transition-colors text-sm"
             >
-              Stang
+              Stäng
             </button>
           </div>
         </div>

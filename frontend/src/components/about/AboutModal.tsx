@@ -240,7 +240,7 @@ export function AboutModal({ isOpen, onClose, onOpenSetup }: AboutModalProps) {
                 className="inline-flex items-center gap-2 bg-gradient-to-r from-primary-500 to-primary-600 text-white px-4 py-2.5 rounded-xl hover:from-primary-600 hover:to-primary-700 transition-all shadow-lg shadow-primary-500/25 font-medium text-sm"
               >
                 <Download className="w-4 h-4" />
-                Oppna installningar
+                Öppna inställningar
               </button>
             )}
           </Section>
