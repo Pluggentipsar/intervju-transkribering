@@ -22,7 +22,7 @@ PREFIX = "TystText-Backend"  # folder name inside zip
 # Directories and files that should never be included
 SKIP_DIRS = {
     "__pycache__", ".git", "node_modules", ".next", "venv", "venv_py311",
-    ".venv", "uploads", "models", ".mypy_cache", ".pytest_cache",
+    ".venv", "uploads", ".mypy_cache", ".pytest_cache",
     ".ruff_cache", "dist", "build", ".eggs",
 }
 SKIP_EXTENSIONS = {".pyc", ".pyo", ".db", ".sqlite", ".sqlite3", ".log", ".spec"}
