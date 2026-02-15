@@ -11,11 +11,11 @@ export function DownloadSection() {
         </div>
 
         <h2 className="text-3xl md:text-4xl font-bold mb-6">
-          Ladda ner TystText
+          Ladda ner TystText-motorn
         </h2>
         <p className="text-gray-300 text-lg max-w-2xl mx-auto mb-10">
-          En enda fil. Dubbelklicka och borja transkribera. Ingen installation,
-          inget konto, ingen data som lamnar din dator.
+          Packa upp, kör installationen och börja transkribera.
+          Ingen data lämnar din dator.
         </p>
 
         {/* Download card */}
@@ -23,24 +23,27 @@ export function DownloadSection() {
           <div className="flex items-center justify-center gap-3 mb-6">
             <Download className="w-8 h-8 text-primary-400" />
             <div className="text-left">
-              <p className="font-semibold text-lg">TystText for Windows</p>
-              <p className="text-sm text-gray-400">Windows 10/11 — ca 2 GB</p>
+              <p className="font-semibold text-lg">TystText-Backend.zip</p>
+              <p className="text-sm text-gray-400">Windows 10/11 — allt installeras automatiskt</p>
             </div>
           </div>
 
           <a
-            href="https://github.com/Pluggentipsar/intervju-transkribering/releases/tag/v1.0.0"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="https://github.com/Pluggentipsar/intervju-transkribering/releases/latest/download/TystText-Backend.zip"
             className="flex items-center justify-center gap-2 w-full px-8 py-4 bg-primary-500 hover:bg-primary-600 text-white font-semibold rounded-xl shadow-lg shadow-primary-500/25 transition-all hover:shadow-primary-500/40 text-lg"
           >
             Ladda ner
             <ArrowRight className="w-5 h-5" />
           </a>
 
-          <p className="text-xs text-gray-500 mt-4">
-            Forsta gangen? Lasningen av AI-modeller tar nagra minuter vid forsta start.
-          </p>
+          <div className="text-left text-sm text-gray-400 mt-6 space-y-2">
+            <p className="font-medium text-gray-300">Snabbguide:</p>
+            <ol className="list-decimal list-inside space-y-1">
+              <li>Packa upp ZIP-filen</li>
+              <li>Kör <span className="text-primary-300 font-mono">TystText-Setup.bat</span> (en gång)</li>
+              <li>Kör <span className="text-primary-300 font-mono">TystText-Start.bat</span> för att starta</li>
+            </ol>
+          </div>
         </div>
 
         {/* Trust indicators */}
@@ -51,7 +54,7 @@ export function DownloadSection() {
           </div>
           <div className="flex items-center gap-2">
             <Monitor className="w-4 h-4 text-primary-400" />
-            Oppet och gratis
+            Öppet och gratis
           </div>
         </div>
       </div>
