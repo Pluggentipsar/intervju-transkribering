@@ -3,6 +3,18 @@ setlocal
 title TystText - Transkribering
 color 0A
 
+REM Wrapper: pausa ALLTID innan fönstret stängs
+call :start
+echo.
+echo  Tryck valfri tangent for att stanga detta fonster...
+pause >nul
+endlocal
+exit /b
+
+REM ===============================================================
+:start
+REM ===============================================================
+
 echo.
 echo  ========================================
 echo    TystText - Lokal Transkribering
@@ -16,8 +28,7 @@ if not exist "venv\Scripts\activate.bat" (
     echo  [!] TystText ar inte installerat an.
     echo      Kor TystText-Setup.bat forst!
     echo.
-    pause
-    exit /b 1
+    goto :eof
 )
 
 REM Aktivera virtuell miljo
@@ -36,5 +47,4 @@ python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
 
 echo.
 echo  TystText stoppad.
-pause
-endlocal
+goto :eof

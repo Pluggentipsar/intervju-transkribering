@@ -3,6 +3,18 @@ setlocal EnableDelayedExpansion
 title TystText - Installation
 color 0A
 
+REM Wrapper: kör setup och pausa ALLTID innan fönstret stängs
+call :setup
+echo.
+echo  Tryck valfri tangent for att stanga detta fonster...
+pause >nul
+endlocal
+exit /b
+
+REM ===============================================================
+:setup
+REM ===============================================================
+
 echo.
 echo  ================================================================
 echo    TystText - Automatisk Installation
@@ -69,11 +81,10 @@ if !PYTHON_OK! EQU 0 (
         echo        Kontrollera din internetanslutning och forsok igen.
         echo        Eller installera Python 3.11 manuellt fran:
         echo        https://www.python.org/downloads/
-        pause
-        exit /b 1
+        goto :eof
     )
 
-    echo        Installerar Python 3.11.9 (detta kan ta en minut)...
+    echo        Installerar Python 3.11.9 (detta kan ta en minut^)...
     echo.
 
     REM Installera tyst, lagg till i PATH, for aktuell anvandare
@@ -83,9 +94,7 @@ if !PYTHON_OK! EQU 0 (
         echo  [FEL] Python-installationen misslyckades.
         echo        Forsok installera Python 3.11 manuellt fran:
         echo        https://www.python.org/downloads/
-        echo        Kryssa i "Add Python to PATH"!
-        pause
-        exit /b 1
+        goto :eof
     )
 
     REM Rensa installationsfilen
@@ -100,8 +109,7 @@ if !PYTHON_OK! EQU 0 (
         echo.
         echo  [FEL] Python installerades men hittades inte i PATH.
         echo        Starta om datorn och kor TystText-Setup.bat igen.
-        pause
-        exit /b 1
+        goto :eof
     )
 
     for /f "tokens=2 delims= " %%v in ('python --version 2^>^&1') do set PYVER=%%v
@@ -121,8 +129,7 @@ if exist "venv\Scripts\activate.bat" (
     !PYTHON_CMD! -m venv venv
     if errorlevel 1 (
         echo  [FEL] Kunde inte skapa virtuell miljo.
-        pause
-        exit /b 1
+        goto :eof
     )
     echo        Virtuell miljo skapad!
 )
@@ -134,7 +141,7 @@ call venv\Scripts\activate.bat
 REM ---------------------------------------------------------------
 REM  3. Installera Python-paket
 REM ---------------------------------------------------------------
-echo  [3/4] Installerar Python-paket (detta tar en stund)...
+echo  [3/4] Installerar Python-paket (detta tar en stund^)...
 echo.
 echo        Installerar grundpaket...
 
@@ -145,8 +152,7 @@ if errorlevel 1 (
     echo.
     echo  [FEL] Installationen misslyckades.
     echo  Forsok igen eller kontrollera din internetanslutning.
-    pause
-    exit /b 1
+    goto :eof
 )
 
 echo.
@@ -155,7 +161,7 @@ echo.
 
 REM Fraga om talaridentifiering
 echo  ----------------------------------------------------------------
-echo  Vill du installera talaridentifiering (pyannote)?
+echo  Vill du installera talaridentifiering (pyannote^)?
 echo  Detta kraver en HuggingFace-token och ~1 GB extra nedladdning.
 echo  Du kan alltid installera detta senare genom att kora Setup igen.
 echo  ----------------------------------------------------------------
@@ -165,7 +171,7 @@ set /p INSTALL_DIARIZATION="  Installera talaridentifiering? (j/n): "
 if /i "!INSTALL_DIARIZATION!"=="j" (
     echo.
     echo        Installerar whisperx och pyannote...
-    pip install whisperx>=3.1.0 pyannote.audio>=3.1.0
+    pip install "whisperx>=3.1.0" "pyannote.audio>=3.1.0"
     if errorlevel 1 (
         echo  [VARNING] Talaridentifiering kunde inte installeras.
         echo            Du kan forsoka igen senare.
@@ -200,14 +206,13 @@ echo  Starta TystText genom att dubbelklicka pa:
 echo    TystText-Start.bat
 echo.
 echo  ----------------------------------------------------------------
-echo  VALFRITT: For talaridentifiering (vem som sager vad):
+echo  VALFRITT: For talaridentifiering (vem som sager vad^):
 echo    1. Skapa konto pa https://huggingface.co
 echo    2. Skapa en token: https://huggingface.co/settings/tokens
 echo    3. Godkann modellerna:
 echo       - https://huggingface.co/pyannote/speaker-diarization-3.1
 echo       - https://huggingface.co/pyannote/segmentation-3.0
-echo    4. Lagg in din token i backend\.env (HF_TOKEN=din_token)
+echo    4. Lagg in din token i backend\.env (HF_TOKEN=din_token^)
 echo  ----------------------------------------------------------------
 echo.
-pause
-endlocal
+goto :eof
