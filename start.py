@@ -25,10 +25,10 @@ def run(cmd: list[str], cwd: Path) -> None:
 def build_frontend() -> None:
     """Build the Next.js frontend as static files for local app mode."""
     if STATIC_DIR.is_dir() and (STATIC_DIR / "index.html").is_file():
-        print("[OK] Frontend redan byggd. Ta bort frontend/out/ for att bygga om.")
+        print("[OK] Frontend redan byggd. Ta bort frontend/out/ för att bygga om.")
         return
 
-    print("[...] Bygger frontend (lokal app-lage)...")
+    print("[...] Bygger frontend (lokalt app-läge)...")
     npm = "npm.cmd" if sys.platform == "win32" else "npm"
     import os
     env = {**os.environ, "BUILD_MODE": "local", "NEXT_PUBLIC_APP_MODE": "local"}
@@ -45,8 +45,8 @@ def build_frontend() -> None:
 
 def start_server() -> None:
     """Start the FastAPI backend server."""
-    print("[...] Startar server pa http://localhost:8000")
-    print("      Tryck Ctrl+C for att avsluta.\n")
+    print("[...] Startar server på http://localhost:8080")
+    print("      Tryck Ctrl+C för att avsluta.\n")
 
     # Open browser once the server is actually responding
     def open_browser() -> None:
@@ -54,17 +54,17 @@ def start_server() -> None:
         import urllib.error
         for _ in range(30):
             try:
-                urllib.request.urlopen("http://localhost:8000/health", timeout=2)
+                urllib.request.urlopen("http://localhost:8080/health", timeout=2)
                 break
             except (urllib.error.URLError, OSError):
                 sleep(1)
-        webbrowser.open("http://localhost:8000")
+        webbrowser.open("http://localhost:8080")
 
     import threading
     threading.Thread(target=open_browser, daemon=True).start()
 
     subprocess.run(
-        [sys.executable, "-m", "uvicorn", "app.main:app", "--host", "127.0.0.1", "--port", "8000"],
+        [sys.executable, "-m", "uvicorn", "app.main:app", "--host", "127.0.0.1", "--port", "8080"],
         cwd=BACKEND_DIR,
     )
 

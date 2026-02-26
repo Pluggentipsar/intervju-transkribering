@@ -69,13 +69,13 @@ def setup_environment() -> None:
 def open_browser_delayed() -> None:
     """Open browser after server has had time to start."""
     sleep(2)
-    webbrowser.open("http://localhost:8000")
+    webbrowser.open("http://localhost:8080")
 
 
 def main() -> None:
     print("=" * 50)
     print("  TystText - Lokal transkribering")
-    print("  http://localhost:8000")
+    print("  http://localhost:8080")
     print("=" * 50)
     print()
     print("Startar server... (stäng detta fönster för att avsluta)")
@@ -92,7 +92,7 @@ def main() -> None:
     uvicorn.run(
         "app.main:app",
         host="127.0.0.1",
-        port=8000,
+        port=8080,
         log_level="warning",
     )
 
