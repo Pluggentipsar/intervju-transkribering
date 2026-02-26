@@ -36,7 +36,7 @@ def check_prerequisites() -> None:
 
     if not (FRONTEND_OUT / "index.html").is_file():
         errors.append(
-            "Frontend inte byggd. Kor forst:\n"
+            "Frontend inte byggd. Kör först:\n"
             "  cd frontend && npm install && npm run build"
         )
 
@@ -57,7 +57,7 @@ def build_frontend() -> None:
         print("[OK] Frontend redan byggd.")
         return
 
-    print("[...] Bygger frontend (lokal app-lage)...")
+    print("[...] Bygger frontend (lokalt app-läge)...")
     npm = "npm.cmd" if sys.platform == "win32" else "npm"
     env = {**os.environ, "BUILD_MODE": "local", "NEXT_PUBLIC_APP_MODE": "local"}
     subprocess.run([npm, "install"], cwd=FRONTEND_DIR, check=True)
@@ -158,11 +158,11 @@ def create_data_template() -> None:
     env_file = data_dir / ".env"
     if not env_file.exists():
         env_file.write_text(
-            "# TystText - Installningar\n"
+            "# TystText - Inställningar\n"
             "#\n"
-            "# For talaridentifiering (valfritt):\n"
-            "# 1. Skapa konto pa https://huggingface.co\n"
-            "# 2. Ga till https://huggingface.co/settings/tokens\n"
+            "# För talaridentifiering (valfritt):\n"
+            "# 1. Skapa konto på https://huggingface.co\n"
+            "# 2. Gå till https://huggingface.co/settings/tokens\n"
             "# 3. Skapa en token och klistra in nedan:\n"
             "#\n"
             "# HF_TOKEN=hf_din_token_har\n",
@@ -181,10 +181,10 @@ def print_summary() -> None:
     print("  Byggd! Distribution finns i:")
     print(f"  {dist_dir}")
     print()
-    print("  For att kora:")
+    print("  För att köra:")
     print(f"  {dist_dir / exe_name}")
     print()
-    print("  For att distribuera:")
+    print("  För att distribuera:")
     print(f"  Zippa hela {dist_dir}-mappen")
     print("=" * 50)
 

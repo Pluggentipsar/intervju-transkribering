@@ -11,19 +11,19 @@ echo.
 
 cd /d "%~dp0"
 
-REM Aktivera virtuell miljo om den finns
+REM Aktivera virtuell miljö om den finns
 if exist "backend\venv_py311\Scripts\activate.bat" (
     call "backend\venv_py311\Scripts\activate.bat"
-    echo  Virtuell miljo: backend\venv_py311
+    echo  Virtuell miljö: backend\venv_py311
 ) else if exist ".venv\Scripts\activate.bat" (
     call ".venv\Scripts\activate.bat"
-    echo  Virtuell miljo: .venv
+    echo  Virtuell miljö: .venv
 ) else if exist "backend\venv\Scripts\activate.bat" (
     call "backend\venv\Scripts\activate.bat"
-    echo  Virtuell miljo: backend\venv
+    echo  Virtuell miljö: backend\venv
 ) else (
-    echo  [!] Ingen virtuell miljo hittad.
-    echo      Kör TystText-Setup.bat foerst.
+    echo  [!] Ingen virtuell miljö hittad.
+    echo      Kör TystText-Setup.bat först.
     echo.
     pause
     exit /b 1
@@ -31,7 +31,7 @@ if exist "backend\venv_py311\Scripts\activate.bat" (
 
 echo.
 echo  Startar TystText...
-echo  (Webblasaren oeppnas automatiskt naer servern aer redo)
+echo  (Webbläsaren öppnas automatiskt när servern är redo)
 echo.
 
 python start.py

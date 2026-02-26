@@ -78,7 +78,7 @@ def main() -> None:
     print("  http://localhost:8000")
     print("=" * 50)
     print()
-    print("Startar server... (stang detta fonster for att avsluta)")
+    print("Startar server... (stäng detta fönster för att avsluta)")
     print()
 
     setup_environment()
