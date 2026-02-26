@@ -11,7 +11,7 @@ export function DownloadSection() {
         </div>
 
         <h2 className="text-3xl md:text-4xl font-bold mb-6">
-          Ladda ner TystText
+          Ladda ner TystText-motorn
         </h2>
         <p className="text-gray-300 text-lg max-w-2xl mx-auto mb-10">
           En enda fil. Dubbelklicka och börja transkribera. Ingen installation,
@@ -29,9 +29,7 @@ export function DownloadSection() {
           </div>
 
           <a
-            href="https://github.com/Pluggentipsar/intervju-transkribering/releases/tag/v1.0.0"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="https://github.com/Pluggentipsar/intervju-transkribering/releases/latest/download/TystText-Backend.zip"
             className="flex items-center justify-center gap-2 w-full px-8 py-4 bg-primary-500 hover:bg-primary-600 text-white font-semibold rounded-xl shadow-lg shadow-primary-500/25 transition-all hover:shadow-primary-500/40 text-lg"
           >
             Ladda ner
