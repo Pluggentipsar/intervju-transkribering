@@ -14,8 +14,8 @@ export function DownloadSection() {
           Ladda ner TystText-motorn
         </h2>
         <p className="text-gray-300 text-lg max-w-2xl mx-auto mb-10">
-          Packa upp, kör installationen och börja transkribera.
-          Ingen data lämnar din dator.
+          En enda fil. Dubbelklicka och börja transkribera. Ingen installation,
+          inget konto, ingen data som lämnar din dator.
         </p>
 
         {/* Download card */}
@@ -23,8 +23,8 @@ export function DownloadSection() {
           <div className="flex items-center justify-center gap-3 mb-6">
             <Download className="w-8 h-8 text-primary-400" />
             <div className="text-left">
-              <p className="font-semibold text-lg">TystText-Backend.zip</p>
-              <p className="text-sm text-gray-400">Windows 10/11 — allt installeras automatiskt</p>
+              <p className="font-semibold text-lg">TystText för Windows</p>
+              <p className="text-sm text-gray-400">Windows 10/11 — ca 2 GB</p>
             </div>
           </div>
 
@@ -36,14 +36,9 @@ export function DownloadSection() {
             <ArrowRight className="w-5 h-5" />
           </a>
 
-          <div className="text-left text-sm text-gray-400 mt-6 space-y-2">
-            <p className="font-medium text-gray-300">Snabbguide:</p>
-            <ol className="list-decimal list-inside space-y-1">
-              <li>Packa upp ZIP-filen</li>
-              <li>Kör <span className="text-primary-300 font-mono">TystText-Setup.bat</span> (en gång)</li>
-              <li>Kör <span className="text-primary-300 font-mono">TystText-Start.bat</span> för att starta</li>
-            </ol>
-          </div>
+          <p className="text-xs text-gray-500 mt-4">
+            Första gången? Laddningen av AI-modeller tar några minuter vid första start.
+          </p>
         </div>
 
         {/* Trust indicators */}

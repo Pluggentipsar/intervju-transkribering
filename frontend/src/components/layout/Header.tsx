@@ -121,7 +121,7 @@ export function Header() {
                 <button
                   onClick={() => setShowSettings(true)}
                   className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
-                  title="Installningar"
+                  title="Inställningar"
                 >
                   <Settings className="w-4 h-4" />
                 </button>

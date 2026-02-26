@@ -3,22 +3,22 @@ import { PlayCircle, BookOpen, MessageCircle, HelpCircle } from "lucide-react";
 const guides = [
   {
     icon: PlayCircle,
-    title: "Kom igang pa 5 minuter",
-    description: "Se hur du laddar ner, startar appen och gor din forsta transkription.",
+    title: "Kom igång på 5 minuter",
+    description: "Se hur du laddar ner, startar appen och gör din första transkription.",
     tag: "Video",
     tagColor: "bg-primary-100 text-primary-700",
   },
   {
     icon: BookOpen,
     title: "Talaridentifiering",
-    description: "Sa satter du upp HuggingFace-token for att automatiskt identifiera talare.",
+    description: "Så sätter du upp HuggingFace-token för att automatiskt identifiera talare.",
     tag: "Guide",
     tagColor: "bg-amber-100 text-amber-700",
   },
   {
     icon: MessageCircle,
     title: "Avidentifiera intervjuer",
-    description: "Steg-for-steg: hur du anonymiserar namn, platser och personnummer fran transkriptioner.",
+    description: "Steg-för-steg: hur du anonymiserar namn, platser och personnummer från transkriptioner.",
     tag: "Guide",
     tagColor: "bg-amber-100 text-amber-700",
   },
@@ -26,20 +26,20 @@ const guides = [
 
 const faq = [
   {
-    q: "Varfor maste jag ladda ner ett program?",
-    a: "TystText kor allt lokalt pa din dator for att skydda din data. Inga ljudfiler eller transkriptioner skickas nagonsin over internet. Det ar darfor du behover ladda ner programmet istallet for att anvanda en webbsida.",
+    q: "Varför måste jag ladda ner ett program?",
+    a: "TystText kör allt lokalt på din dator för att skydda din data. Inga ljudfiler eller transkriptioner skickas någonsin över internet. Det är därför du behöver ladda ner programmet istället för att använda en webbsida.",
   },
   {
-    q: "Ar det sakert?",
-    a: "Ja. All bearbetning sker lokalt — dina intervjuer lamnar aldrig din dator. Det ar darfor verktyget ar perfekt for kansliga intervjuer som behover avidentifieras.",
+    q: "Är det säkert?",
+    a: "Ja. All bearbetning sker lokalt — dina intervjuer lämnar aldrig din dator. Det är därför verktyget är perfekt för känsliga intervjuer som behöver avidentifieras.",
   },
   {
-    q: "Vad behover jag for dator?",
-    a: "Windows 10 eller 11. For snabbast resultat rekommenderas en dator med GPU (grafikkort), men det funkar aven med bara CPU — det tar bara langre tid.",
+    q: "Vad behöver jag för dator?",
+    a: "Windows 10 eller 11. För snabbast resultat rekommenderas en dator med GPU (grafikkort), men det funkar även med bara CPU — det tar bara längre tid.",
   },
   {
-    q: "Vad ar talaridentifiering?",
-    a: "Appen kan automatiskt skilja pa olika talare i en intervju. For att aktivera det behovs ett gratis konto pa HuggingFace — appen guidar dig genom det.",
+    q: "Vad är talaridentifiering?",
+    a: "Appen kan automatiskt skilja på olika talare i en intervju. För att aktivera det behövs ett gratis konto på HuggingFace — appen guidar dig genom det.",
   },
 ];
 
@@ -53,10 +53,10 @@ export function GuideSection() {
             Guider
           </span>
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Sa anvander du TystText
+            Så använder du TystText
           </h2>
           <p className="text-gray-600 max-w-xl mx-auto">
-            Guider och videoinstruktioner for att komma igang snabbt
+            Guider och videoinstruktioner för att komma igång snabbt
           </p>
         </div>
 
@@ -86,7 +86,7 @@ export function GuideSection() {
           <div className="text-center mb-10">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-gray-100 rounded-full text-gray-600 text-sm font-medium mb-4">
               <HelpCircle className="w-4 h-4" />
-              Vanliga fragor
+              Vanliga frågor
             </div>
           </div>
 

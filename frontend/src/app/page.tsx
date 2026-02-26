@@ -145,15 +145,15 @@ function LocalAppHome() {
         {/* Welcome header */}
         <div className="mb-10">
           <h1 className="text-2xl font-bold text-white mb-2">
-            Vad vill du gora?
+            Vad vill du göra?
           </h1>
           <div className="flex items-center gap-2 text-gray-400 text-sm">
             <div className="flex items-center gap-1.5 px-2.5 py-1 bg-green-500/10 text-green-400 rounded-full text-xs font-medium">
               <Lock className="w-3 h-3" />
-              Lokalt lage
+              Lokalt läge
             </div>
             <span className="text-gray-500">
-              All bearbetning sker pa din dator
+              All bearbetning sker på din dator
             </span>
           </div>
         </div>
@@ -231,10 +231,10 @@ function LocalAppHome() {
                 <Sparkles className="w-7 h-7 text-gray-500" />
               </div>
               <h3 className="font-semibold text-white mb-2 text-lg">
-                Inga transkriptioner an
+                Inga transkriptioner än
               </h3>
               <p className="text-sm text-gray-400 mb-6 max-w-xs mx-auto">
-                Ladda upp en ljudfil for att komma igang med din forsta transkription
+                Ladda upp en ljudfil för att komma igång med din första transkription
               </p>
               <Link
                 href="/upload"

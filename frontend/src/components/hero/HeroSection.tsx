@@ -30,7 +30,7 @@ export function HeroSection() {
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary-500/10 border border-primary-500/20 rounded-full text-primary-300 text-sm mb-8 animate-fade-in">
             <Mic className="w-4 h-4" />
-            <span>Sveriges basta AI for svenska</span>
+            <span>Sveriges bästa AI för svenska</span>
           </div>
 
           {/* Main heading */}
@@ -54,8 +54,8 @@ export function HeroSection() {
           {/* Description */}
           <p className="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto mb-10 animate-fade-in" style={{ animationDelay: "0.3s" }}>
             TystText omvandlar dina ljudfiler till text med KB Whisper,
-            identifierar talare automatiskt och anonymiserar kanslig information
-            — allt lokalt pa din egen dator.
+            identifierar talare automatiskt och anonymiserar känslig information
+            — allt lokalt på din egen dator.
           </p>
 
           {/* Feature pills */}
@@ -94,7 +94,7 @@ export function HeroSection() {
                 size="lg"
                 className="w-full sm:w-auto bg-white/10 hover:bg-white/20 text-white border border-white/20 transition-all"
               >
-                Sa funkar det
+                Så funkar det
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             </a>
@@ -104,7 +104,7 @@ export function HeroSection() {
           <div className="mt-8 animate-fade-in" style={{ animationDelay: "0.9s" }}>
             <p className="text-gray-500 text-sm flex items-center justify-center gap-2">
               <Lock className="w-3.5 h-3.5 text-green-400" />
-              Gratis, oppet och 100% lokalt — ingen data lamnar din dator
+              Gratis, öppet och 100% lokalt — ingen data lämnar din dator
             </p>
           </div>
         </div>
