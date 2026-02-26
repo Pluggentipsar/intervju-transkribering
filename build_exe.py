@@ -127,7 +127,11 @@ def run_pyinstaller() -> None:
         # Hidden imports: libraries with dynamic loading
         "--hidden-import=multipart",
         "--hidden-import=aiosqlite",
+        "--hidden-import=aiosqlite.core",
+        "--hidden-import=aiosqlite.context",
+        "--collect-all=aiosqlite",
         "--hidden-import=sqlalchemy.dialects.sqlite",
+        "--hidden-import=sqlalchemy.dialects.sqlite.aiosqlite",
         "--hidden-import=pydantic_settings",
         # Reduce size: exclude dev/test packages
         "--exclude-module=pytest",
