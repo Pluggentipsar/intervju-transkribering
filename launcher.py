@@ -107,9 +107,9 @@ def main() -> None:
             "app.main:app",
             host="127.0.0.1",
             port=8080,
-            log_level="warning",
+            log_level="info",
         )
-    except Exception as e:
+    except BaseException as e:
         print()
         print("=" * 50)
         print("  FEL: Servern kunde inte starta")
@@ -118,8 +118,11 @@ def main() -> None:
         import traceback
 
         traceback.print_exc()
-        print()
-        input("Tryck Enter för att stänga...")
+
+    # Always keep window open - the server should run forever,
+    # so if we get here something went wrong.
+    print()
+    input("Tryck Enter för att stänga...")
 
 
 if __name__ == "__main__":
