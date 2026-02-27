@@ -12,6 +12,19 @@ import webbrowser
 from pathlib import Path
 from time import sleep
 
+# Explicit imports so PyInstaller bundles these packages.
+# They are loaded dynamically at runtime by SQLAlchemy/FastAPI/uvicorn
+# and PyInstaller cannot detect them via static analysis.
+import aiosqlite  # noqa: F401
+import aiosqlite.core  # noqa: F401
+import aiofiles  # noqa: F401
+import pydantic_settings  # noqa: F401
+import sqlalchemy.dialects.sqlite.aiosqlite  # noqa: F401
+import multipart  # noqa: F401
+import anyio  # noqa: F401
+import sniffio  # noqa: F401
+import starlette  # noqa: F401
+
 
 def get_app_dir() -> Path:
     """Directory containing the exe (or this script in dev)."""
