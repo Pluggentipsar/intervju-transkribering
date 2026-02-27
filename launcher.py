@@ -81,20 +81,32 @@ def main() -> None:
     print("Startar server... (stäng detta fönster för att avsluta)")
     print()
 
-    setup_environment()
+    try:
+        setup_environment()
 
-    # Open browser in background
-    threading.Thread(target=open_browser_delayed, daemon=True).start()
+        # Open browser in background
+        threading.Thread(target=open_browser_delayed, daemon=True).start()
 
-    # Import after environment is set up
-    import uvicorn
+        # Import after environment is set up
+        import uvicorn
 
-    uvicorn.run(
-        "app.main:app",
-        host="127.0.0.1",
-        port=8080,
-        log_level="warning",
-    )
+        uvicorn.run(
+            "app.main:app",
+            host="127.0.0.1",
+            port=8080,
+            log_level="warning",
+        )
+    except Exception as e:
+        print()
+        print("=" * 50)
+        print("  FEL: Servern kunde inte starta")
+        print("=" * 50)
+        print()
+        import traceback
+
+        traceback.print_exc()
+        print()
+        input("Tryck Enter för att stänga...")
 
 
 if __name__ == "__main__":
