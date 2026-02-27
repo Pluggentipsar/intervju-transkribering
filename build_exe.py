@@ -54,20 +54,20 @@ def check_prerequisites() -> None:
 def build_frontend() -> None:
     """Build frontend as static export for local app mode."""
     if (FRONTEND_OUT / "index.html").is_file():
-        print("[OK] Frontend redan byggd.")
+        print("[OK] Frontend redan byggd.", flush=True)
         return
 
-    print("[...] Bygger frontend (lokalt app-läge)...")
+    print("[...] Bygger frontend (lokalt app-läge)...", flush=True)
     npm = "npm.cmd" if sys.platform == "win32" else "npm"
     env = {**os.environ, "BUILD_MODE": "local", "NEXT_PUBLIC_APP_MODE": "local"}
     subprocess.run([npm, "install"], cwd=FRONTEND_DIR, check=True)
     subprocess.run([npm, "run", "build"], cwd=FRONTEND_DIR, env=env, check=True)
-    print("[OK] Frontend byggd.")
+    print("[OK] Frontend byggd.", flush=True)
 
 
 def run_pyinstaller() -> None:
     """Run PyInstaller to create the exe."""
-    print("[...] Bygger exe med PyInstaller...")
+    print("[...] Bygger exe med PyInstaller...", flush=True)
 
     cmd = [
         sys.executable,
@@ -124,31 +124,9 @@ def run_pyinstaller() -> None:
         "--hidden-import=app.services.anonymization",
         "--hidden-import=app.workers",
         "--hidden-import=app.workers.transcription_worker",
-        # Hidden imports: libraries with dynamic loading
-        "--hidden-import=multipart",
-        "--hidden-import=aiosqlite",
-        "--hidden-import=aiosqlite.core",
-        "--hidden-import=aiosqlite.context",
-        "--collect-all=aiosqlite",
-        "--hidden-import=aiofiles",
-        "--hidden-import=aiofiles.os",
-        "--hidden-import=aiofiles.ospath",
-        "--collect-all=aiofiles",
+        # Hidden imports: SQLAlchemy dialect loaded by connection string
         "--hidden-import=sqlalchemy.dialects.sqlite",
         "--hidden-import=sqlalchemy.dialects.sqlite.aiosqlite",
-        "--hidden-import=pydantic_settings",
-        "--collect-all=pydantic_settings",
-        "--hidden-import=dotenv",
-        "--hidden-import=starlette",
-        "--collect-all=starlette",
-        "--hidden-import=anyio",
-        "--hidden-import=anyio._backends",
-        "--hidden-import=anyio._backends._asyncio",
-        "--collect-all=anyio",
-        "--hidden-import=sniffio",
-        "--hidden-import=httptools",
-        "--hidden-import=python_multipart",
-        "--collect-all=python_multipart",
         # Reduce size: exclude dev/test packages
         "--exclude-module=pytest",
         "--exclude-module=ruff",
@@ -166,7 +144,7 @@ def run_pyinstaller() -> None:
     ]
 
     subprocess.run(cmd, check=True)
-    print("[OK] Exe byggd!")
+    print("[OK] Exe byggd!", flush=True)
 
 
 def create_data_template() -> None:
@@ -210,10 +188,10 @@ def print_summary() -> None:
 
 
 def main() -> None:
-    print("=" * 50)
-    print("  TystText - Bygg exe")
-    print("=" * 50)
-    print()
+    print("=" * 50, flush=True)
+    print("  TystText - Bygg exe", flush=True)
+    print("=" * 50, flush=True)
+    print(flush=True)
 
     check_prerequisites()
     build_frontend()
